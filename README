@@ -1,112 +1,81 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="1038.36">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 14.0px Helvetica; min-height: 17.0px}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 14.0px Helvetica}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica; min-height: 17.0px}
-    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Andale Mono'; color: #008210}
-    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Andale Mono'; color: #008210; min-height: 15.0px}
-    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Andale Mono'}
-    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Andale Mono'; min-height: 15.0px}
-    p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Andale Mono'; color: #b933a1}
-    p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Andale Mono'; min-height: 14.0px}
-    span.s1 {color: #b933a1}
-    span.s2 {color: #6f43a8}
-    span.s3 {color: #008210}
-    span.s4 {color: #508187}
-    span.s5 {color: #000000}
-    span.s6 {font: 13.0px 'Andale Mono'}
-  </style>
-</head>
-<body>
-<p class="p1"><b></b><br></p>
-<p class="p2"><b>Objective-C wrapper for HTML parser of libxml2</b></p>
-<p class="p1"><b></b><br></p>
-<p class="p3">This HTML parser gives access to libxml2 with Objective-C in Mac OS (Leopard and higher) and iOS.</p>
-<p class="p3">An optional category provides XPath support.</p>
-<p class="p3">libxml2 is very fast, for less overhead all recursive tasks are realized with C functions<span class="Apple-converted-space"> </span></p>
-<p class="p3">The naming is similar to NSXMLDocument (which lacks in iOS).</p>
-<p class="p3">Unlike NSXMLDocument HTMLDocument does not inherit from HTMLNode, there is no HTMLElement class</p>
-<p class="p3">and you can't create new documents nor change nodes.</p>
-<p class="p4"><b></b><br></p>
-<p class="p3">All methods returning a value/object without parameter(s) are declared as read-only properties for providing dot syntax.</p>
-<p class="p4"><br></p>
-<p class="p3"><b>Objective-C classes:</b></p>
-<p class="p4"><br></p>
-<p class="p5">HTMLDocument</p>
-<p class="p5">HTMLNode</p>
-<p class="p4"><br></p>
-<p class="p3"><b>Optional category of HTMLNode for XPath support:</b></p>
-<p class="p4"><br></p>
-<p class="p5">HTMLNode+XPath</p>
-<p class="p6"><br></p>
-<p class="p3"><b>How to use:</b></p>
-<p class="p4"><br></p>
-<p class="p3">• Add the class files and the (optional) category files to your project</p>
-<p class="p3">• Add libxml2.dylib to frameworks (Link Binary With Libraries)</p>
-<p class="p3">• Add $SDKROOT/usr/include/libxml2 to target -&gt; Build Settings &gt; Header Search Paths</p>
-<p class="p3">• Add -lxml2 to target -&gt;<span class="Apple-converted-space">  </span>Build Settings -&gt; other linker flags<span class="Apple-converted-space"> </span></p>
-<p class="p3">• import HTMLDocument.h and HTMLNode+XPath.h (if needed) header files<span class="Apple-converted-space"> </span></p>
-<p class="p4"><br></p>
-<p class="p4"><br></p>
-<p class="p3"><b>HTMLDocument:</b></p>
-<p class="p4"><br></p>
-<p class="p3">Create an HTMLDocument with one of these init methods</p>
-<p class="p4"><br></p>
-<p class="p7">- (<span class="s1">id</span>)initWithData:(<span class="s2">NSData</span> *)data encoding:(<span class="s2">NSStringEncoding</span> )encoding error:(<span class="s2">NSError</span> **)error; <span class="s3">// designated initializer</span></p>
-<p class="p7">- (<span class="s1">id</span>)initWithContentsOfURL:(<span class="s2">NSURL</span> *)url encoding:(<span class="s2">NSStringEncoding</span> )encoding error:(<span class="s2">NSError</span> **)error;</p>
-<p class="p7">- (<span class="s1">id</span>)initWithHTMLString:(<span class="s2">NSString</span> *)string encoding:(<span class="s2">NSStringEncoding</span> )encoding error:(<span class="s2">NSError</span> **)error;</p>
-<p class="p8"><br></p>
-<p class="p3">The corresponding initializer methods without the encoding parameter assume UTF-8 encoding.</p>
-<p class="p3">For each initializer method there is also a convenience class method</p>
-<p class="p4"><br></p>
-<p class="p7">+ (<span class="s4">HTMLDocument</span> *)documentWith…</p>
-<p class="p8"><br></p>
-<p class="p3">Get the root node (actually the &lt;html&gt; node ) or the &lt;body&gt; node of the document with<span class="Apple-converted-space"> </span></p>
-<p class="p4"><br></p>
-<p class="p9">@property<span class="s5"> (</span>readonly<span class="s5">) </span><span class="s4">HTMLNode</span><span class="s5"> *rootNode</span></p>
-<p class="p9">@property<span class="s5"> (</span>readonly<span class="s5">) </span><span class="s4">HTMLNode</span><span class="s5"> *body</span></p>
-<p class="p8"><br></p>
-<p class="p4"><br></p>
-<p class="p3"><b>HTMLNode:</b></p>
-<p class="p4"><br></p>
-<p class="p3">In HTMLNode search for node(s) only within the first level of children of the current node with the prefix</p>
-<p class="p4"><br></p>
-<p class="p7">- (<span class="s4">HTMLNode</span> *)child…</p>
-<p class="p7">- (<span class="s2">NSArray</span> *)children…</p>
-<p class="p10"><br></p>
-<p class="p3">or perform a deep search within all descendants of the current node</p>
-<p class="p10"><br></p>
-<p class="p7">- (<span class="s4">HTMLNode</span> *)descendant…</p>
-<p class="p7">- (<span class="s2">NSArray</span> *)descendants…</p>
-<p class="p8"><br></p>
-<p class="p3">the appropriate methods to search with XPath within all descendants are</p>
-<p class="p4"><br></p>
-<p class="p7">- (<span class="s4">HTMLNode</span> *)node…</p>
-<p class="p7">- (<span class="s2">NSArray</span> *)nodes…</p>
-<p class="p4"><br></p>
-<p class="p3">Generic methods to search for a custom XPath are</p>
-<p class="p4"><br></p>
-<p class="p7">- (<span class="s4">HTMLNode</span> *)nodeForXPath:(<span class="s2">NSString</span> *)query error:(<span class="s2">NSError</span> **)error;</p>
-<p class="p7">- (<span class="s2">NSArray</span> *)nodesForXPath:(<span class="s2">NSString</span> *)query error:(<span class="s2">NSError</span> **)error;</p>
-<p class="p8"><br></p>
-<p class="p3">There are many methods to look for tag and attribute names and values.</p>
-<p class="p4"><br></p>
-<p class="p3">You can obtain the <span class="s6">stringValue</span> of the current text node or the <span class="s6">textContent</span> of all descendant text nodes</p>
-<p class="p3">as well as its <span class="s6">integerValue</span>, <span class="s6">doubleValue</span> (also with a given locale identifier) and <span class="s6">dateValue</span> for a format string (also with a given time zone).</p>
-<p class="p3">By default returning string values are trimmed by whitespace and newline characters. The methods starting with <span class="s6">raw</span> return the unfiltered values.</p>
-<p class="p4"><br></p>
-<p class="p4"><br></p>
-<p class="p4"><br></p>
-<p class="p3">© 2011 Stefan Klieme<span class="Apple-converted-space"> </span></p>
-<p class="p10"><br></p>
-<p class="p8"><br></p>
-</body>
-</html>
+﻿
+Objective-C wrapper for HTML parser of libxml2
+
+This HTML parser gives access to libxml2 with Objective-C in Mac OS (Leopard and higher) and iOS.
+An optional category provides XPath support.
+libxml2 is very fast, for less overhead all recursive tasks are realized with C functions 
+The naming is similar to NSXMLDocument (which lacks in iOS).
+Unlike NSXMLDocument HTMLDocument does not inherit from HTMLNode, there is no HTMLElement class
+and you can't create new documents nor change nodes.
+
+All methods returning a value/object without parameter(s) are declared as read-only properties for providing dot syntax.
+
+Objective-C classes:
+
+HTMLDocument
+HTMLNode
+
+Optional category of HTMLNode for XPath support:
+
+HTMLNode+XPath
+
+How to use:
+
+• Add the class files and the (optional) category files to your project
+• Add libxml2.dylib to frameworks (Link Binary With Libraries)
+• Add $SDKROOT/usr/include/libxml2 to target -> Build Settings > Header Search Paths
+• Add -lxml2 to target ->  Build Settings -> other linker flags 
+• import HTMLDocument.h and HTMLNode+XPath.h (if needed) header files 
+
+
+HTMLDocument:
+
+Create an HTMLDocument with one of these init methods
+
+- (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error; // designated initializer
+- (id)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
+- (id)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+The corresponding initializer methods without the encoding parameter assume UTF-8 encoding.
+For each initializer method there is also a convenience class method
+
++ (HTMLDocument *)documentWith…
+
+Get the root node (actually the <html> node ) or the <body> node of the document with 
+
+@property (readonly) HTMLNode *rootNode
+@property (readonly) HTMLNode *body
+
+
+HTMLNode:
+
+In HTMLNode search for node(s) only within the first level of children of the current node with the prefix
+
+- (HTMLNode *)child…
+- (NSArray *)children…
+
+or perform a deep search within all descendants of the current node
+
+- (HTMLNode *)descendant…
+- (NSArray *)descendants…
+
+the appropriate methods to search with XPath within all descendants are
+
+- (HTMLNode *)node…
+- (NSArray *)nodes…
+
+Generic methods to search for a custom XPath are
+
+- (HTMLNode *)nodeForXPath:(NSString *)query error:(NSError **)error;
+- (NSArray *)nodesForXPath:(NSString *)query error:(NSError **)error;
+
+There are many methods to look for tag and attribute names and values.
+
+You can obtain the stringValue of the current text node or the textContent of all descendant text nodes
+as well as its integerValue, doubleValue (also with a given locale identifier) and dateValue for a format string (also with a given time zone).
+By default returning string values are trimmed by whitespace and newline characters. The methods starting with raw return the unfiltered values.
+
+
+© 2011 Stefan Klieme 
+
+
