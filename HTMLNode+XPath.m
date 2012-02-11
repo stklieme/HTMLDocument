@@ -56,7 +56,7 @@ static void XPathErrorCallback(void *node, xmlErrorPtr err)
     if ((errorCode > 1199) && (errorCode < 1223)) { // filter XPath errors 1200 - 1222
         char *errMessage = err->message;
         NSString *errorMessage = (errMessage) ? [NSString stringWithUTF8String:errMessage] : @"unknown error";
-        [(HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
+        [(__bridge_transfer HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
     }
 }
 
@@ -76,7 +76,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     
     xpathContext = xmlXPathNewContext((xmlDocPtr)node);
     if (xpathContext) {
-        if (considerError) xmlSetStructuredErrorFunc((void *)htmlNode, XPathErrorCallback);
+        if (considerError) xmlSetStructuredErrorFunc((__bridge_retained void *)htmlNode, XPathErrorCallback);
         xpathObject = xmlXPathEvalExpression((xmlChar *)[query UTF8String], xpathContext);
         
         if (xpathObject) {

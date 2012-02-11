@@ -74,6 +74,7 @@
 
 // C functions for less overhead in recursion
 
+void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursive);
 NSString * textContent(xmlNode *node);
 void arrayOfTextContent(xmlNode * node, NSMutableArray * array, BOOL recursive);
 HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, BOOL recursive);
