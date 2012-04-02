@@ -210,6 +210,22 @@
 - (NSArray *)descendantsWithClass:(NSString *)classValue;
 - (NSArray *)childrenWithClass:(NSString *)classValue;
 
+// Returns first descendant / child  node with a matching tag name and string value
+- (HTMLNode *)descendantOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (HTMLNode *)childOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+
+// Returns all descendant / child  nodes with a matching tag name and string value
+- (NSArray *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (NSArray *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+
+// Returns first descendant / child  node with a matching tag name and containing string value
+- (HTMLNode *)descendantOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (HTMLNode *)childOfTag:(NSString *)tagName valueContains:(NSString *)value;
+
+// Returns all descendant / child  nodes with a matching tag name and containing string value
+- (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (NSArray *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value;
+
 // Returns first descendant / child  node with a matching tag name
 - (HTMLNode *)descendantOfTag:(NSString *)tagName;
 - (HTMLNode *)childOfTag:(NSString *)tagName;
