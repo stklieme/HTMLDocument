@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.0 - 25 Dec 2011                                                     #
+ #	  Version 1.1 - 3. Apr 2012                                                     #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -463,7 +463,7 @@ HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlCha
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
             if (xmlStrEqual(attr->name, attrName)) {                    
                 xmlNode * child = attr->children;
-                if (child && (xmlStrEqual(child->content, attrValue) || attrValue == NULL))
+                if (child && xmlStrEqual(child->content, attrValue))
                     return [HTMLNode nodeWithXMLNode:currentNode];
             }
         }
@@ -505,6 +505,8 @@ HTMLNode * childWithAttributeValueContains(const xmlChar * attrName, const xmlCh
 
 void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
+    if (attrName == NULL) return;
+    
     xmlNode *currentNode;
     
     for (currentNode = node; currentNode; currentNode = currentNode->next) {	
@@ -512,7 +514,7 @@ void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar *
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
             if (xmlStrEqual(attr->name, attrName)) {
                 xmlNode * child = attr->children;
-                if (child && (xmlStrEqual(child->content, attrValue) || attrValue == NULL)) {
+                if (child && xmlStrEqual(child->content, attrValue)) {
                     HTMLNode *matchingNode = [[HTMLNode alloc] initWithXMLNode:currentNode];
                     [array addObject:matchingNode];
                     [matchingNode release];
@@ -527,6 +529,8 @@ void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar *
 
 void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
+    if (attrName == NULL) return;
+    
     xmlNode *currentNode;
     
     for (currentNode = node; currentNode; currentNode = currentNode->next) {
@@ -650,7 +654,7 @@ HTMLNode * childOfTagValueMatches(const xmlChar * tagName, const xmlChar * value
         if (xmlStrEqual(currentNode->name, tagName)) {
             childNode = currentNode->children;
             childName = (childNode) ? childNode->content : NULL;
-            if ((childName && xmlStrEqual(childName, value)) || value == NULL) {
+            if (childName && xmlStrEqual(childName, value)) {
                 return [HTMLNode nodeWithXMLNode:currentNode];
             }
         }
@@ -712,6 +716,8 @@ HTMLNode * childOfTagValueContains(const xmlChar * tagName, const xmlChar * valu
 
 void childrenOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
+    if (tagName == NULL) return;
+    
     xmlNode *currentNode, *childNode;
     const xmlChar *childName;
     
@@ -719,7 +725,7 @@ void childrenOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, x
         if (xmlStrEqual(currentNode->name, tagName)) {
             childNode = currentNode->children;
             childName = (childNode) ? childNode->content : NULL;
-             if ((childName && xmlStrEqual(childName, value)) || value == NULL) {
+            if (childName && xmlStrEqual(childName, value)) {
                 HTMLNode * matchingNode = [[HTMLNode alloc] initWithXMLNode:currentNode];
                 [array addObject:matchingNode];
                 [matchingNode release];
@@ -731,6 +737,8 @@ void childrenOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, x
 
 void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
+    if (tagName == NULL) return;
+    
     xmlNode *currentNode, *childNode;
     const xmlChar *childName;
     
@@ -751,7 +759,6 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 
 - (NSArray *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value
 {
-    if (tagName == nil || value == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, YES);
     return array;
@@ -759,7 +766,6 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 
 - (NSArray *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value
 {
-    if (tagName == nil || value == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, NO);
     return array;
@@ -767,7 +773,6 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 
 - (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
-    if (tagName == nil || value == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, YES);
     return array;
@@ -775,7 +780,6 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 
 - (NSArray *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
-    if (tagName == nil || value == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, NO);
     return array;
@@ -815,6 +819,8 @@ HTMLNode * childOfTag(const xmlChar * tagName, xmlNode * node, BOOL recursive)
 
 void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
+    if (tagName == NULL) return;
+    
     xmlNode *currentNode;
     
     for (currentNode = node; currentNode; currentNode = currentNode->next) {				
@@ -830,7 +836,6 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (NSArray *)descendantsOfTag:(NSString *)tagName
 {
-    if (tagName == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->children, array, YES);
     return array;
@@ -838,7 +843,6 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (NSArray *)childrenOfTag:(NSString *)tagName
 {
-    if (tagName == nil) return nil;
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->children, array, NO);
     return array;

@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.0 - 25 Dec 2011                                                     #
+ #	  Version 1.1 - 3. Apr 2012                                                     #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
