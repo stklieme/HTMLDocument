@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.1 - 3. Apr 2012                                                     #
+ #	  Version 1.2 - 27. May 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -39,6 +39,18 @@
 - (NSString *)collapseCharactersinSet:(NSCharacterSet *)characterSet usingSeparator:(NSString *)separator;
 - (NSString *)collapseWhitespaceAndNewLine;
 
+// Returns the date value of a string for a given date format and time zone
+// The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier;
+// Returns the date value of a string for a given date format and time zone optionally considering a leading plus sign
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag;
+
+// Returns the double value of a string for a given locale identifier e.g. en_US or fr_CH
+// The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements
+// and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+// if a nil value is passed, the current locale is used
+- (NSDate *)dateValueWithFormat:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone;
+
 @end
 
 @implementation NSString (SKHTMLNode)
@@ -60,6 +72,41 @@
 - (NSString *)collapseWhitespaceAndNewLine
 {
     return [self collapseCharactersinSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] usingSeparator:@" "];
+}
+
+// ISO 639 identifier e.g. en_US or fr_CH
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier 
+{
+    return [self doubleValueForLocaleIdentifier:identifier consideringPlusSign:NO];
+}
+
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag
+{
+    NSNumberFormatter * numberFormatter = [[NSNumberFormatter alloc] init];
+    if (identifier) {
+        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:identifier];
+        [numberFormatter setLocale:locale];
+        [locale release];
+    }
+    if (flag && [self hasPrefix:@"+"]) [numberFormatter setPositivePrefix:@"+"];
+    [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+    NSNumber *number = [numberFormatter numberFromString:self];
+    [numberFormatter release];
+    return [number doubleValue];
+    
+}
+
+// date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
+- (NSDate *)dateValueWithFormat:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone
+{
+    NSDate *formattedDate;
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:dateFormat];
+    [dateFormatter setTimeZone:timeZone];
+    formattedDate = [dateFormatter dateFromString:self];
+    [dateFormatter release];
+    
+    return formattedDate;
 }
 
 @end
@@ -238,51 +285,35 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 }
 
 // ISO 639 identifier e.g. en_US or fr_CH
-- (double )doubleValueOfString:(NSString *)string forLocaleIdentifier:(NSString *)identifier 
-{
-    NSNumberFormatter * numberFormatter = [[NSNumberFormatter alloc] init];
-    if (identifier) {
-        NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:identifier];
-        [numberFormatter setLocale:locale];
-        [locale release];
-    }
-    [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-    NSNumber *number = [numberFormatter numberFromString:string];
-    [numberFormatter release];
-    return [number doubleValue];
-}
-
 - (double )doubleValueForLocaleIdentifier:(NSString *)identifier
 {
-    return [self doubleValueOfString:self.stringValue forLocaleIdentifier:identifier];
+    return [self.stringValue doubleValueForLocaleIdentifier:identifier];
+}
+
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag
+{
+    return [self.stringValue doubleValueForLocaleIdentifier:identifier consideringPlusSign:flag];
 }
 
 - (double )contentDoubleValueForLocaleIdentifier:(NSString *)identifier
 {
-    return [self doubleValueOfString:self.textContent forLocaleIdentifier:identifier];
+    return [self.textContent doubleValueForLocaleIdentifier:identifier];
+}
+
+- (double )contentDoubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag
+{
+    return [self.stringValue doubleValueForLocaleIdentifier:identifier consideringPlusSign:flag];
 }
 
 // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
-- (NSDate *)dateValueFromString:(NSString *)string format:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone
-{
-    NSDate *formattedDate;
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:dateFormat];
-    [dateFormatter setTimeZone:timeZone];
-    formattedDate = [dateFormatter dateFromString:string];
-    [dateFormatter release];
-    
-    return formattedDate;
-}
-
 - (NSDate *)dateValueForFormat:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone
 {
-    return [self dateValueFromString:self.stringValue format:dateFormat timeZone:timeZone];
+    return [self.stringValue dateValueWithFormat:dateFormat timeZone:timeZone];
 }
 
 - (NSDate *)contentDateValueForFormat:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone
 {
-    return [self dateValueFromString:self.textContent format:dateFormat timeZone:timeZone];
+    return [self.textContent dateValueWithFormat:dateFormat timeZone:timeZone];
 }
 
 - (NSDate *)dateValueForFormat:(NSString *)dateFormat
@@ -562,6 +593,11 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, NO);
 }
 
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+{
+    return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, NO);
+}
+
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
 {
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, YES);
@@ -570,6 +606,11 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
 {
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, NO);
+}
+
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+{
+    return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, NO);
 }
 
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
@@ -583,6 +624,13 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
+    return array;
+}
+
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
@@ -600,6 +648,13 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
     return array;
 }
 
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
+    return array;
+}
+
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName
 {
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, YES);
@@ -608,6 +663,11 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName
 {
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, NO);
+}
+
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName
+{
+    return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->next, NO);
 }
 
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName
@@ -624,6 +684,12 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
     return array;
 }
 
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->next, array, NO);
+    return array;
+}
 
 - (HTMLNode *)descendantWithClass:(NSString *)classValue
 {	
@@ -635,6 +701,11 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
     return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->children, NO);
 }
 
+- (HTMLNode *)siblingWithClass:(NSString *)classValue
+{	
+    return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->next, NO);
+}
+
 - (NSArray *)descendantsWithClass:(NSString *)classValue
 {	
     return [self descendantsWithAttribute:kClassKey valueMatches:classValue];
@@ -643,6 +714,11 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
 - (NSArray *)childrenWithClass:(NSString *)classValue
 {	
     return [self childrenWithAttribute:kClassKey valueMatches:classValue];
+}
+
+- (NSArray *)siblingsWithClass:(NSString *)classValue
+{	
+    return [self siblingsWithAttribute:kClassKey valueMatches:classValue];
 }
 
 HTMLNode * childOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, xmlNode * node, BOOL recursive)
@@ -703,6 +779,11 @@ HTMLNode * childOfTagValueContains(const xmlChar * tagName, const xmlChar * valu
     return childOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, NO);
 }
 
+- (HTMLNode *)siblingOfTag:(NSString *)tagName valueMatches:(NSString *)value
+{
+    return childOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, NO);
+}
+
 - (HTMLNode *)descendantOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     return childOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, YES);
@@ -711,6 +792,11 @@ HTMLNode * childOfTagValueContains(const xmlChar * tagName, const xmlChar * valu
 - (HTMLNode *)childOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     return childOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, NO);
+}
+
+- (HTMLNode *)siblingOfTag:(NSString *)tagName valueContains:(NSString *)value
+{
+    return childOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, NO);
 }
 
 
@@ -771,6 +857,13 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
     return array;
 }
 
+- (NSArray *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, array, NO);
+    return array;
+}
+
 - (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
@@ -782,6 +875,13 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, NO);
+    return array;
+}
+
+- (NSArray *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
@@ -816,6 +916,11 @@ HTMLNode * childOfTag(const xmlChar * tagName, xmlNode * node, BOOL recursive)
     return (tagName) ? childOfTag(BAD_CAST [tagName UTF8String], xmlNode_->children, NO) : nil;
 }
 
+- (HTMLNode *)siblingOfTag:(NSString *)tagName
+{
+    return (tagName) ? childOfTag(BAD_CAST [tagName UTF8String], xmlNode_->next, NO) : nil;
+}
+
 
 void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
@@ -848,6 +953,12 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     return array;
 }
 
+- (NSArray *)siblingsOfTag:(NSString *)tagName
+{
+    NSMutableArray *array = [NSMutableArray array];
+    childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->next, array, NO);
+    return array;
+}
 
 #pragma mark - description
 // includes type, name , number of children, attributes and the first 80 characters of raw content

@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.1 - 3. Apr 2012                                                     #
+ #	  Version 1.2 - 27. May 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -100,21 +100,17 @@
 // Returns the double value
 @property (readonly) double doubleValue;
 
-// Returns the double value of a string for a given locale identifier e.g. en_US or fr_CH
-// The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements
-// and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-// if a nil value is passed, the current locale is used
-- (double )doubleValueOfString:(NSString *)string forLocaleIdentifier:(NSString *)identifier;
-
 // Returns the double value of the string value for a given locale identifier
 - (double )doubleValueForLocaleIdentifier:(NSString *)identifier;
+
+// Returns the double value of the string value for a given locale identifier considering a plus sign prefix
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag;
 
 // Returns the double value of the text content for a given locale identifier
 - (double )contentDoubleValueForLocaleIdentifier:(NSString *)identifier;
 
-// Returns the date value of a string for a given date format and time zone
-// The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-- (NSDate *)dateValueFromString:(NSString *)string format:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone;
+// Returns the double value of the text content for a given locale identifier considering a plus sign prefix
+- (double )contentDoubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag;
 
 // Returns the date value of the string value for a given date format and time zone
 - (NSDate *)dateValueForFormat:(NSString *)dateFormat timeZone:(NSTimeZone *)timeZone;
@@ -178,61 +174,75 @@
 
 // Note: In the category HTMLNode+XPath all appropriate query methods begin with node instead of descendant
 
-// Returns first descendant / child node with a matching attribute name and value
+// Returns first descendant / child / sibling node with a matching attribute name and value
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 
-// Returns first descendant / child  node with a matching attribute name and containing value
+// Returns first descendant / child / sibling node with a matching attribute name and containing value
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
-// Returns all descendant / child  nodes with a matching attribute name and value
+// Returns all descendant / child / sibling nodes with a matching attribute name and value
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 - (NSArray *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 
-// Returns all descendant / child  nodes with a matching attribute name and containing value
+// Returns all descendant / child / sibling nodes with a matching attribute name and containing value
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 - (NSArray *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
-// Returns first descendant / child  node with a matching attribute name
+// Returns first descendant / child / sibling node with a matching attribute name
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName;
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName;
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName;
 
-// Returns all descendant / child  nodes with a matching attribute name
+// Returns all descendant / child / sibling nodes with a matching attribute name
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName;
 - (NSArray *)childrenWithAttribute:(NSString *)attributeName;
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName;
 
-// Returns first descendant / child  node with a matching class attribute name
+// Returns first descendant / child / sibling node with a matching class attribute name
 - (HTMLNode *)descendantWithClass:(NSString *)classValue;
 - (HTMLNode *)childWithClass:(NSString *)classValue;
+- (HTMLNode *)siblingWithClass:(NSString *)classValue;
 
-// Returns all descendant / child  nodes with a matching class attribute name
+// Returns all descendant / child / sibling nodes with a matching class attribute name
 - (NSArray *)descendantsWithClass:(NSString *)classValue;
 - (NSArray *)childrenWithClass:(NSString *)classValue;
+- (NSArray *)siblingsWithClass:(NSString *)classValue;
 
-// Returns first descendant / child  node with a matching tag name and string value
+// Returns first descendant / child / sibling node with a matching tag name and string value
 - (HTMLNode *)descendantOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 - (HTMLNode *)childOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (HTMLNode *)siblingOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 
-// Returns all descendant / child  nodes with a matching tag name and string value
+// Returns all descendant / child / sibling nodes with a matching tag name and string value
 - (NSArray *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 - (NSArray *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (NSArray *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 
-// Returns first descendant / child  node with a matching tag name and containing string value
+// Returns first descendant / child / sibling node with a matching tag name and containing string value
 - (HTMLNode *)descendantOfTag:(NSString *)tagName valueContains:(NSString *)value;
 - (HTMLNode *)childOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (HTMLNode *)siblingOfTag:(NSString *)tagName valueContains:(NSString *)value;
 
-// Returns all descendant / child  nodes with a matching tag name and containing string value
+// Returns all descendant / child /sibling nodes with a matching tag name and containing string value
 - (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value;
 - (NSArray *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (NSArray *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value;
 
-// Returns first descendant / child  node with a matching tag name
+// Returns first descendant / child / sibling node with a matching tag name
 - (HTMLNode *)descendantOfTag:(NSString *)tagName;
 - (HTMLNode *)childOfTag:(NSString *)tagName;
+- (HTMLNode *)siblingOfTag:(NSString *)tagName;
 
-// Returns all descendant / child nodes with a matching tag name
+// Returns all descendant / child / sibling nodes with a matching tag name
 - (NSArray *)descendantsOfTag:(NSString *)tagName;
 - (NSArray *)childrenOfTag:(NSString *)tagName;
+- (NSArray *)siblingsOfTag:(NSString *)tagName;
 
 
 @end
