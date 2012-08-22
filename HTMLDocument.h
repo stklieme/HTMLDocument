@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.1 - 3. Apr 2012                                                     #
+ #	  Version 1.3 - 22. Aug 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -71,6 +71,23 @@
 
 // value of title tag
 @property (readonly) NSString *title;
+
+@end
+
+
+
+@interface XMLDocument : HTMLDocument
+{
+    xmlDocPtr  xmlDoc_;
+}
+
++ (XMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error;
++ (XMLDocument *)documentWithData:(NSData *)data error:(NSError **)error;
++ (XMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
++ (XMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error;
++ (XMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
++ (XMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error;
+
 
 
 @end

@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.2 - 27. May 2012                                                    #
+ #	  Version 1.3 - 22. Aug 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -25,7 +25,7 @@
  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR       #
  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,         #
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,# 
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
  # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
  #																					#
@@ -34,7 +34,7 @@
 
 // category of NSString for collapsing characters within a string
 
-@interface NSString (SKHTMLNode)  
+@interface NSString (SKHTMLNode)
 
 - (NSString *)collapseCharactersinSet:(NSCharacterSet *)characterSet usingSeparator:(NSString *)separator;
 - (NSString *)collapseWhitespaceAndNewLine;
@@ -55,7 +55,7 @@
 
 @implementation NSString (SKHTMLNode)
 
-// method to collapse all multiple occurrences of characters of a given character set 
+// method to collapse all multiple occurrences of characters of a given character set
 // within the string into the given separator
 - (NSString *)collapseCharactersinSet:(NSCharacterSet *)characterSet usingSeparator:(NSString *)separator
 {
@@ -75,7 +75,7 @@
 }
 
 // ISO 639 identifier e.g. en_US or fr_CH
-- (double )doubleValueForLocaleIdentifier:(NSString *)identifier 
+- (double )doubleValueForLocaleIdentifier:(NSString *)identifier
 {
     return [self doubleValueForLocaleIdentifier:identifier consideringPlusSign:NO];
 }
@@ -124,8 +124,10 @@
 void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursive);
 NSString * textContent(xmlNode *node);
 void arrayOfTextContent(xmlNode * node, NSMutableArray * array, BOOL recursive);
+HTMLNode * childWithAttribute(const xmlChar * attrName, xmlNode * node, BOOL recursive);
 HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, BOOL recursive);
 HTMLNode * childWithAttributeValueContains(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, BOOL recursive);
+void childrenWithAttribute(const xmlChar * attrName, xmlNode * node, NSMutableArray * array, BOOL recursive);
 void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive);
 void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive);
 HTMLNode * childOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, xmlNode * node, BOOL recursive);
@@ -144,7 +146,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 // convenience initializer
 + (HTMLNode *)nodeWithXMLNode:(xmlNode *)xmlNode
 {
-	return [[[HTMLNode alloc] initWithXMLNode:xmlNode] autorelease];	
+	return [[[HTMLNode alloc] initWithXMLNode:xmlNode] autorelease];
 }
 
 #pragma mark - init method
@@ -168,7 +170,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (HTMLNode *)parent
 {
-	return (xmlNode_->parent) ? [HTMLNode nodeWithXMLNode:xmlNode_->parent] : nil;	
+	return (xmlNode_->parent) ? [HTMLNode nodeWithXMLNode:xmlNode_->parent] : nil;
 }
 
 - (HTMLNode *)nextSibling
@@ -176,14 +178,14 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 	return (xmlNode_->next) ? [HTMLNode nodeWithXMLNode:xmlNode_->next] : nil;
 }
 
-- (HTMLNode *)previousSibling 
+- (HTMLNode *)previousSibling
 {
-	return (xmlNode_->prev) ? [HTMLNode nodeWithXMLNode:xmlNode_->prev] : nil;	
+	return (xmlNode_->prev) ? [HTMLNode nodeWithXMLNode:xmlNode_->prev] : nil;
 }
 
 - (HTMLNode *)firstChild
 {
-	return (xmlNode_->children) ? [HTMLNode nodeWithXMLNode:xmlNode_->children] : nil;	
+	return (xmlNode_->children) ? [HTMLNode nodeWithXMLNode:xmlNode_->children] : nil;
 }
 
 - (HTMLNode *)lastChild
@@ -200,9 +202,9 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 - (NSArray *)children
 {
 	xmlNode *currentNode = NULL;
-	NSMutableArray *array = [NSMutableArray array]; 
+	NSMutableArray *array = [NSMutableArray array];
     
-	for (currentNode = xmlNode_->children; currentNode; currentNode = currentNode->next) {	
+	for (currentNode = xmlNode_->children; currentNode; currentNode = currentNode->next) {
 		HTMLNode *node = [[HTMLNode alloc] initWithXMLNode:currentNode];
 		[array addObject:node];
         [node release];
@@ -219,7 +221,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 #pragma mark - attributes and values of current node (self)
 
 - (NSString *)attributeForName:(NSString *)name
-{	
+{
     NSString *result = nil;
     
     xmlChar *attributeValue = xmlGetProp(xmlNode_, BAD_CAST [name UTF8String]);
@@ -375,6 +377,7 @@ void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursiv
     NSString *content;
     
     for (currentNode = node; currentNode; currentNode = currentNode->next) {
+        // if (currentNode->type == XML_TEXT_NODE) {
         content = textContent(currentNode);
         if (content) {
             if ([content isEqualToString:@""])
@@ -384,6 +387,7 @@ void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursiv
                 if (![content isEqualToString:@""]) [array addObject:content];
             }
         }
+        //  }
         if (recursive) textContentOfChildren(currentNode->children, array, recursive);
     }
 }
@@ -461,8 +465,8 @@ NSString * textContent(xmlNode *node)
 }
 
 
-- (NSString *)HTMLContent 
-{	
+- (NSString *)HTMLContent
+{
     NSString *result = nil;
     xmlBufferPtr xmlBuffer = xmlBufferCreateSize(DUMP_BUFFER_SIZE);
     xmlOutputBufferPtr outputBuffer = xmlOutputBufferCreateBuffer(xmlBuffer, NULL);
@@ -471,8 +475,8 @@ NSString * textContent(xmlNode *node)
     xmlOutputBufferFlush(outputBuffer);
     
     if (xmlBuffer->content) {
-        result = [[[NSString alloc] initWithBytes:(const void *)xmlBufferContent(xmlBuffer) 
-                                           length:xmlBufferLength(xmlBuffer) 
+        result = [[[NSString alloc] initWithBytes:(const void *)xmlBufferContent(xmlBuffer)
+                                           length:xmlBufferLength(xmlBuffer)
                                          encoding:NSUTF8StringEncoding] autorelease];
     }
     
@@ -485,6 +489,30 @@ NSString * textContent(xmlNode *node)
 
 #pragma mark - query methods
 
+HTMLNode * childWithAttribute(const xmlChar * attrName, xmlNode * node, BOOL recursive)
+{
+    xmlNode *currentNode = NULL;
+    
+    for (currentNode = node; currentNode; currentNode = currentNode->next) {
+        
+        for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
+            if (xmlStrEqual(attr->name, attrName)) {
+                return [HTMLNode nodeWithXMLNode:currentNode];
+            }
+        }
+        
+        if (recursive) {
+            HTMLNode *subNode = childWithAttribute(attrName, currentNode->children, recursive);
+            if (subNode)
+                return subNode;
+            
+        }
+    }
+    
+    return NULL;
+}
+
+
 HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, BOOL recursive)
 {
     xmlNode *currentNode = NULL;
@@ -492,7 +520,7 @@ HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlCha
     for (currentNode = node; currentNode; currentNode = currentNode->next) {
         
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
-            if (xmlStrEqual(attr->name, attrName)) {                    
+            if (xmlStrEqual(attr->name, attrName)) {
                 xmlNode * child = attr->children;
                 if (child && xmlStrEqual(child->content, attrValue))
                     return [HTMLNode nodeWithXMLNode:currentNode];
@@ -501,7 +529,7 @@ HTMLNode * childWithAttributeValueMatches(const xmlChar * attrName, const xmlCha
         
         if (recursive) {
             HTMLNode *subNode = childWithAttributeValueMatches(attrName, attrValue, currentNode->children, recursive);
-            if (subNode) 
+            if (subNode)
                 return subNode;
             
         }
@@ -517,7 +545,7 @@ HTMLNode * childWithAttributeValueContains(const xmlChar * attrName, const xmlCh
     for (currentNode = node; currentNode; currentNode = currentNode->next) {
         
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
-            if (xmlStrEqual(attr->name, attrName)) {                    
+            if (xmlStrEqual(attr->name, attrName)) {
                 xmlNode * child = attr->children;
                 if (child && xmlStrstr(child->content, attrValue) != NULL)
                     return [HTMLNode nodeWithXMLNode:currentNode];
@@ -526,7 +554,7 @@ HTMLNode * childWithAttributeValueContains(const xmlChar * attrName, const xmlCh
         
         if (recursive) {
             HTMLNode *subNode = childWithAttributeValueContains(attrName, attrValue, currentNode->children, recursive);
-            if (subNode) 
+            if (subNode)
                 return subNode;
             
         }
@@ -534,13 +562,35 @@ HTMLNode * childWithAttributeValueContains(const xmlChar * attrName, const xmlCh
     return NULL;
 }
 
+void childrenWithAttribute(const xmlChar * attrName, xmlNode * node, NSMutableArray * array, BOOL recursive)
+{
+    if (attrName == NULL) return;
+    
+    xmlNode *currentNode;
+    
+    for (currentNode = node; currentNode; currentNode = currentNode->next) {
+        
+        for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
+            if (xmlStrEqual(attr->name, attrName)) {
+                    HTMLNode *matchingNode = [[HTMLNode alloc] initWithXMLNode:currentNode];
+                    [array addObject:matchingNode];
+                    [matchingNode release];
+                    break;
+            }
+        }
+        
+        if (recursive) childrenWithAttribute(attrName, currentNode->children, array, recursive);
+    }
+}
+
+
 void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive)
 {
     if (attrName == NULL) return;
     
     xmlNode *currentNode;
     
-    for (currentNode = node; currentNode; currentNode = currentNode->next) {	
+    for (currentNode = node; currentNode; currentNode = currentNode->next) {
         
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
             if (xmlStrEqual(attr->name, attrName)) {
@@ -555,7 +605,7 @@ void childrenWithAttributeValueMatches(const xmlChar * attrName, const xmlChar *
         }
         
         if (recursive) childrenWithAttributeValueMatches(attrName, attrValue, currentNode->children, array, recursive);
-    }	
+    }
 }
 
 void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar * attrValue, xmlNode * node, NSMutableArray * array, BOOL recursive)
@@ -567,7 +617,6 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
     for (currentNode = node; currentNode; currentNode = currentNode->next) {
         
         for (xmlAttrPtr attr = currentNode->properties; attr; attr = attr->next) {
-            
             if (xmlStrEqual(attr->name, attrName)) {
                 xmlNode * child = attr->children;
                 if (child && xmlStrstr(child->content, attrValue) != NULL) {
@@ -580,75 +629,75 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
         }
         
         if (recursive) childrenWithAttributeValueContains(attrName, attrValue, currentNode->children, array, recursive);
-    }	
+    }
 }
 
-- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, YES);
 }
 
-- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, NO);
 }
 
-- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, NO);
 }
 
-- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, YES);
 }
 
-- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, NO);
 }
 
-- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, NO);
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue 
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue 
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
@@ -657,67 +706,67 @@ void childrenWithAttributeValueContains(const xmlChar * attrName, const xmlChar 
 
 - (HTMLNode *)descendantWithAttribute:(NSString *)attributeName
 {
-    return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, YES);
+    return childWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, YES);
 }
 
 - (HTMLNode *)childWithAttribute:(NSString *)attributeName
 {
-    return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, NO);
+    return childWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, NO);
 }
 
 - (HTMLNode *)siblingWithAttribute:(NSString *)attributeName
 {
-    return childWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->next, NO);
+    return childWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->next, NO);
 }
 
 - (NSArray *)descendantsWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
-    childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, array, YES);
+    childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
 - (NSArray *)childrenWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
-    childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->children, array, NO);
+    childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
 - (NSArray *)siblingsWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
-    childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], NULL, xmlNode_->next, array, NO);
+    childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
 - (HTMLNode *)descendantWithClass:(NSString *)classValue
-{	
+{
     return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->children, YES);
 }
 
 - (HTMLNode *)childWithClass:(NSString *)classValue
-{	
+{
     return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->children, NO);
 }
 
 - (HTMLNode *)siblingWithClass:(NSString *)classValue
-{	
+{
     return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->next, NO);
 }
 
 - (NSArray *)descendantsWithClass:(NSString *)classValue
-{	
+{
     return [self descendantsWithAttribute:kClassKey valueMatches:classValue];
 }
 
 - (NSArray *)childrenWithClass:(NSString *)classValue
-{	
+{
     return [self childrenWithAttribute:kClassKey valueMatches:classValue];
 }
 
 - (NSArray *)siblingsWithClass:(NSString *)classValue
-{	
+{
     return [self siblingsWithAttribute:kClassKey valueMatches:classValue];
 }
 
@@ -736,11 +785,11 @@ HTMLNode * childOfTagValueMatches(const xmlChar * tagName, const xmlChar * value
         }
         if (recursive) {
             HTMLNode *subNode = childOfTagValueMatches(tagName, value, currentNode->children, recursive);
-            if (subNode) 
+            if (subNode)
                 return subNode;
             
         }
-    }	
+    }
     
     return nil;
 }
@@ -760,11 +809,11 @@ HTMLNode * childOfTagValueContains(const xmlChar * tagName, const xmlChar * valu
         }
         if (recursive) {
             HTMLNode *subNode = childOfTagValueContains(tagName, value, currentNode->children, recursive);
-            if (subNode) 
+            if (subNode)
                 return subNode;
             
         }
-    }	
+    }
     
     return nil;
 }
@@ -818,7 +867,7 @@ void childrenOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, x
             }
         }
         if (recursive) childrenOfTagValueMatches(tagName, value, currentNode->children, array, recursive);
-    }	
+    }
 }
 
 void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, xmlNode * node, NSMutableArray * array, BOOL recursive)
@@ -839,7 +888,7 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
             }
         }
         if (recursive) childrenOfTagValueContains(tagName, value, currentNode->children, array, recursive);
-    }	
+    }
 }
 
 
@@ -891,17 +940,17 @@ HTMLNode * childOfTag(const xmlChar * tagName, xmlNode * node, BOOL recursive)
 {
     xmlNode *currentNode;
     
-    for (currentNode = node; currentNode; currentNode = currentNode->next) 	{				
+    for (currentNode = node; currentNode; currentNode = currentNode->next) 	{
         if (currentNode->name && xmlStrEqual(currentNode->name, tagName)) {
             return [HTMLNode nodeWithXMLNode:currentNode];
         }
         if (recursive) {
             HTMLNode *subNode = childOfTag(tagName, currentNode->children, recursive);
-            if (subNode) 
+            if (subNode)
                 return subNode;
             
         }
-    }	
+    }
     
     return nil;
 }
@@ -928,7 +977,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     
     xmlNode *currentNode;
     
-    for (currentNode = node; currentNode; currentNode = currentNode->next) {				
+    for (currentNode = node; currentNode; currentNode = currentNode->next) {
         if (currentNode->name && xmlStrEqual(currentNode->name, tagName)) {
             HTMLNode * matchingNode = [[HTMLNode alloc] initWithXMLNode:currentNode];
             [array addObject:matchingNode];
@@ -936,7 +985,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
         }
         
         if (recursive) childrenOfTag(tagName, currentNode->children, array, recursive);
-    }	
+    }
 }
 
 - (NSArray *)descendantsOfTag:(NSString *)tagName
@@ -964,8 +1013,8 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 // includes type, name , number of children, attributes and the first 80 characters of raw content
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"type: %d - name: %@ - number of children: %lu\nattributes: %@\nHTML: %@", 
-            self.elementType,  self.tagName, self.childCount, self.attributes, self.HTMLString];   
+    return [NSString stringWithFormat:@"type: %d - name: %@ - number of children: %lu\nattributes: %@\nHTML: %@",
+            self.elementType,  self.tagName, (long)self.childCount, self.attributes, self.HTMLString];
 }
 
 @end

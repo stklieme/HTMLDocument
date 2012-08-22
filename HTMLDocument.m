@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.1 - 3. Apr 2012                                                     #
+ #	  Version 1.3 - 22. Aug 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -26,13 +26,23 @@
  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR       #
  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,         #
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,# 
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
  # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
  #																					#
  ###################################################################################*/
 
 #import "HTMLDocument.h"
+
+const char *convertStringEncoding(NSStringEncoding encoding);
+
+const char * convertStringEncoding(NSStringEncoding encoding) {
+    CFStringEncoding cfEncoding = CFStringConvertNSStringEncodingToEncoding(encoding);
+    CFStringRef cfEncodingAsString = CFStringConvertEncodingToIANACharSetName(cfEncoding);
+    return CFStringGetCStringPtr(cfEncodingAsString, kCFStringEncodingMacRoman);
+}
+
+
 
 @implementation HTMLDocument
 @synthesize rootNode;
@@ -53,7 +63,7 @@
 
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-     return [[[HTMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error] autorelease];
+    return [[[HTMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error] autorelease];
 }
 
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error
@@ -63,7 +73,7 @@
 
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-     return [[[HTMLDocument alloc] initWithHTMLString:string encoding:encoding error:error] autorelease];
+    return [[[HTMLDocument alloc] initWithHTMLString:string encoding:encoding error:error] autorelease];
 }
 
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error
@@ -80,12 +90,8 @@
     if (self) {
         NSInteger errorCode = 0;
 		if (data && [data length]) {
-            CFStringEncoding cfEncoding = CFStringConvertNSStringEncodingToEncoding(encoding);
-            CFStringRef cfEncodingAsString = CFStringConvertEncodingToIANACharSetName(cfEncoding);
-            const char *cfEncodingStringPtr = CFStringGetCStringPtr(cfEncodingAsString, kCFStringEncodingMacRoman);
-            
             int htmlParseOptions = HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING;
-            htmlDoc_ = htmlReadDoc(BAD_CAST [data bytes], NULL, cfEncodingStringPtr, htmlParseOptions);
+            htmlDoc_ = htmlReadDoc(BAD_CAST [data bytes], NULL,  convertStringEncoding(encoding), htmlParseOptions);
             if (htmlDoc_) {
                 xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(htmlDoc_);
                 if (xmlDocRootNode && xmlStrEqual(xmlDocRootNode->name, BAD_CAST "html")) {
@@ -97,11 +103,11 @@
             else
                 errorCode = 2;
 		}
-		else 
+		else
             errorCode = 1;
         
         if (errorCode) {
-            if (error) 
+            if (error)
                 *error = [self errorForCode:errorCode];
             
             [self release];
@@ -131,9 +137,9 @@
 }
 
 - (id)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
-{ 
-	return [self initWithData:[string dataUsingEncoding:encoding] 
-                     encoding:encoding 
+{
+	return [self initWithData:[string dataUsingEncoding:encoding]
+                     encoding:encoding
                         error:error];
 }
 
@@ -153,17 +159,17 @@
 #pragma mark - frequently used nodes
 
 - (HTMLNode *)head
-{	
+{
 	return [self.rootNode childOfTag:@"head"];
 }
 
 - (HTMLNode *)body
-{	
+{
 	return [self.rootNode childOfTag:@"body"];
 }
 
 - (NSString *)title
-{	
+{
 	return [[self.head childOfTag:@"title"] stringValue];
 }
 
@@ -185,10 +191,80 @@
             errorString = @"XML data seems not to be of type HTML";
             break;
     }
-    return [NSError errorWithDomain:@"com.klieme.HTMLDocument"
-                        code:errorCode 
-                    userInfo:[NSDictionary dictionaryWithObject:errorString forKey:NSLocalizedDescriptionKey]];
+    return [NSError errorWithDomain:[@"com.klieme." stringByAppendingString: NSStringFromClass([self class])]
+                               code:errorCode
+                           userInfo:[NSDictionary dictionaryWithObject:errorString forKey:NSLocalizedDescriptionKey]];
 }
 
 
 @end
+
+
+@implementation XMLDocument
+
++ (XMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithData:data encoding:encoding error:error] autorelease];
+}
+
++ (XMLDocument *)documentWithData:(NSData *)data error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithData:data error:error] autorelease];
+}
+
++ (XMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error] autorelease];
+}
+
++ (XMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithContentsOfURL:url error:error] autorelease];
+}
+
++ (XMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithHTMLString:string encoding:encoding error:error] autorelease];
+}
+
++ (XMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error
+{
+    return [[[XMLDocument alloc] initWithHTMLString:string error:error] autorelease];
+}
+
+- (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
+{
+    self = [super init];
+    if (self) {
+        NSInteger errorCode = 0;
+		if (data && [data length]) {
+            int xmlParseOptions = XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
+            xmlDoc_ = xmlReadDoc(BAD_CAST [data bytes], NULL, convertStringEncoding(encoding), xmlParseOptions);
+            if (xmlDoc_) {
+                xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(xmlDoc_);
+                if (xmlDocRootNode) {
+                    rootNode = [[HTMLNode alloc] initWithXMLNode:xmlDocRootNode];
+                }
+                else
+                    errorCode = 3;
+            }
+            else
+                errorCode = 2;
+		}
+		else
+            errorCode = 1;
+        
+        if (errorCode) {
+            if (error)
+                *error = [self errorForCode:errorCode];
+            
+            [self release];
+            return nil;
+        }
+    }
+	return self;
+}
+
+@end
+
+
