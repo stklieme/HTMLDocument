@@ -304,7 +304,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (double )contentDoubleValueForLocaleIdentifier:(NSString *)identifier consideringPlusSign:(BOOL)flag
 {
-    return [self.stringValue doubleValueForLocaleIdentifier:identifier consideringPlusSign:flag];
+    return [self.textContent doubleValueForLocaleIdentifier:identifier consideringPlusSign:flag];
 }
 
 // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
