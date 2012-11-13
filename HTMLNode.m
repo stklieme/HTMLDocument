@@ -172,7 +172,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (void)dealloc {
     self.xpathError = nil;
-    [super dealloc];
+    SAFE_ARC_SUPER_DEALLOC();
 }
 
 #pragma mark - navigating methods
