@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.3 - 22. Aug 2012                                                    #
+ #	  Version 1.4 - 13. Nov 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -25,7 +25,7 @@
  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR       #
  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,         #
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,# 
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
  # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
  #																					#
@@ -37,13 +37,27 @@
 
 #define kClassKey @"class"
 
+// ARCMacros by John Blanco
+
+#if __has_feature(objc_arc)
+#define SAFE_ARC_PROP_RETAIN strong
+#define SAFE_ARC_RELEASE(x)
+#define SAFE_ARC_AUTORELEASE(x) (x)
+#define SAFE_ARC_SUPER_DEALLOC()
+#else
+#define SAFE_ARC_PROP_RETAIN retain
+#define SAFE_ARC_RELEASE(x) ([(x) release])
+#define SAFE_ARC_AUTORELEASE(x) ([(x) autorelease])
+#define SAFE_ARC_SUPER_DEALLOC() ([super dealloc])
+#endif
+
 @interface HTMLNode : NSObject {
     NSError *xpathError;
 	xmlNode * xmlNode_;
 }
 
-// property to catch XPath errors 
-@property (retain)  NSError *xpathError;
+// property to catch XPath errors
+@property (SAFE_ARC_PROP_RETAIN)  NSError *xpathError;
 
 #pragma mark - init methods
 #pragma mark class

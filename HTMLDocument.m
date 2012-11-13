@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.3 - 22. Aug 2012                                                    #
+ #	  Version 1.4 - 13. Nov 2012                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -53,32 +53,32 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
 
 + (HTMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithData:data encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithData:data encoding:encoding error:error]);
 }
 
 + (HTMLDocument *)documentWithData:(NSData *)data error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithData:data error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithData:data error:error]);
 }
 
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error]);
 }
 
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithContentsOfURL:url error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithContentsOfURL:url error:error]);
 }
 
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithHTMLString:string encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithHTMLString:string encoding:encoding error:error]);
 }
 
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error
 {
-    return [[[HTMLDocument alloc] initWithHTMLString:string error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[HTMLDocument alloc] initWithHTMLString:string error:error]);
 }
 
 #pragma mark - instance init methods
@@ -110,7 +110,7 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
             if (error)
                 *error = [self errorForCode:errorCode];
             
-            [self release];
+            SAFE_ARC_RELEASE(self);
             return nil;
         }
     }
@@ -151,9 +151,9 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
 
 - (void)dealloc
 {
-    [rootNode release];
+    SAFE_ARC_RELEASE(rootNode);
     xmlFreeDoc(htmlDoc_);
-	[super dealloc];
+	SAFE_ARC_SUPER_DEALLOC();
 }
 
 #pragma mark - frequently used nodes
@@ -204,32 +204,32 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
 
 + (XMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithData:data encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithData:data encoding:encoding error:error]);
 }
 
 + (XMLDocument *)documentWithData:(NSData *)data error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithData:data error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithData:data error:error]);
 }
 
 + (XMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithContentsOfURL:url encoding:encoding error:error]);
 }
 
 + (XMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithContentsOfURL:url error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithContentsOfURL:url error:error]);
 }
 
 + (XMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithHTMLString:string encoding:encoding error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithHTMLString:string encoding:encoding error:error]);
 }
 
 + (XMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error
 {
-    return [[[XMLDocument alloc] initWithHTMLString:string error:error] autorelease];
+    return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithHTMLString:string error:error]);
 }
 
 - (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
@@ -258,7 +258,7 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
             if (error)
                 *error = [self errorForCode:errorCode];
             
-            [self release];
+            SAFE_ARC_RELEASE(self);
             return nil;
         }
     }

@@ -1,4 +1,4 @@
-﻿
+
 Objective-C wrapper for HTML parser of libxml2
 
 This HTML parser gives access to libxml2 with Objective-C in Mac OS (Leopard and higher) and iOS.
@@ -8,6 +8,8 @@ The naming is similar to NSXMLDocument (which lacks in iOS).
 Unlike NSXMLDocument HTMLDocument does not inherit from HTMLNode, there is no HTMLElement class and you can't create new documents nor change nodes.
 
 All methods returning a value/object without parameter(s) are declared as read-only properties for providing dot syntax.
+
+Full (ARC) Automatic Reference Counting support using conditional preprocessor macros (Thanks to John Blanco of Rapture In Venice)
 
 Objective-C classes:
 
@@ -84,6 +86,6 @@ You can obtain the stringValue of the current text node or the textContent of al
 By default returning string values are trimmed by whitespace and newline characters. The methods starting with raw return the unfiltered values.
 
 
-© 2011 Stefan Klieme 
+© 2011-2012 Stefan Klieme 
 
 

@@ -7,7 +7,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.3 - 22. Aug 2012                                                    #
+ #	  Version 1.4 - 13. Nov 2012                                                    #
  #																					#
  #    usage:     add #import HTMLNode+XPath.h                                       #
  #                                                                                  #
@@ -25,7 +25,7 @@
  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR       #
  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,         #
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,# 
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
  # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
  #																					#
@@ -56,13 +56,17 @@ static void XPathErrorCallback(void *node, xmlErrorPtr err)
     if ((errorCode > 1199) && (errorCode < 1223)) { // filter XPath errors 1200 - 1222
         char *errMessage = err->message;
         NSString *errorMessage = (errMessage) ? [NSString stringWithUTF8String:errMessage] : @"unknown error";
+#if __has_feature(objc_arc)
         [(__bridge_transfer HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
+#else
+        [(HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
+#endif
     }
 }
 
 
 // performXPathQuery() returns one HTMLNode object or an array of HTMLNode objects
-// if the query matches any nodes, otherwise nil. 
+// if the query matches any nodes, otherwise nil.
 
 static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleNode, BOOL considerError, HTMLNode *htmlNode)
 {
@@ -70,13 +74,19 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
         if (considerError) [htmlNode setErrorWithMessage:@"query string must not be nil value" andCode:6];
         return nil;
     }
-    xmlXPathContextPtr xpathContext; 
-    xmlXPathObjectPtr xpathObject; 
+    xmlXPathContextPtr xpathContext;
+    xmlXPathObjectPtr xpathObject;
 	id result = nil;
     
     xpathContext = xmlXPathNewContext((xmlDocPtr)node);
     if (xpathContext) {
-        if (considerError) xmlSetStructuredErrorFunc((__bridge_retained void *)htmlNode, XPathErrorCallback);
+        if (considerError)
+#if __has_feature(objc_arc)
+        { xmlSetStructuredErrorFunc((__bridge_retained void *)htmlNode, XPathErrorCallback); }
+#else
+        { xmlSetStructuredErrorFunc((void *)htmlNode, XPathErrorCallback); }
+#endif
+        
         xpathObject = xmlXPathEvalExpression((xmlChar *)[query UTF8String], xpathContext);
         
         if (xpathObject) {
@@ -90,8 +100,10 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
                     for (int i = 0; i < nodes->nodeNr; i++) {
                         HTMLNode *matchedNode = [[HTMLNode alloc] initWithXMLNode:nodes->nodeTab[i]];
                         [result addObject:matchedNode];
+#if !__has_feature(objc_arc)
                         [matchedNode release];
-                    } 
+#endif
+                    }
                 }
             }
             xmlXPathFreeObject(xpathObject);
@@ -99,7 +111,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
         else {
             if (considerError) [htmlNode setErrorWithMessage:@"Could not evaluate XPath expression" andCode:5];
         }
-        xmlXPathFreeContext(xpathContext); 
+        xmlXPathFreeContext(xpathContext);
     }
     else
         if (considerError) [htmlNode setErrorWithMessage:@"Could not create XPath context" andCode:4];
@@ -132,7 +144,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 
 - (HTMLNode *)nodeForXPath:(NSString *)query
 {
-    return [self nodeForXPath:query error:nil]; 
+    return [self nodeForXPath:query error:nil];
 }
 
 
@@ -148,7 +160,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 
 - (NSArray *)nodesForXPath:(NSString *)query
 {
-    return [self nodesForXPath:query error:nil]; 
+    return [self nodesForXPath:query error:nil];
 }
 
 #pragma mark - specific XPath Query methods
@@ -327,7 +339,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 
 - (void)setErrorWithMessage:(NSString *)message andCode:(NSInteger)code
 {
-    self.xpathError = [NSError errorWithDomain:@"com.klieme.HTMLDocument" 
+    self.xpathError = [NSError errorWithDomain:@"com.klieme.HTMLDocument"
                                           code:code
                                       userInfo:[NSDictionary dictionaryWithObject:message
                                                                            forKey:NSLocalizedDescriptionKey]];
