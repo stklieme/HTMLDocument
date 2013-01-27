@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.4 - 13. Nov 2012                                                    #
+ #	  Version 1.5 - 27. Jan 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -38,17 +38,20 @@
 #define kClassKey @"class"
 
 // ARCMacros by John Blanco
+// added a macro for computed readonly properties which return always autoreleased objects
 
 #if __has_feature(objc_arc)
-#define SAFE_ARC_PROP_RETAIN strong
-#define SAFE_ARC_RELEASE(x)
-#define SAFE_ARC_AUTORELEASE(x) (x)
-#define SAFE_ARC_SUPER_DEALLOC()
+    #define SAFE_ARC_PROP_RETAIN strong
+    #define SAFE_ARC_READONLY_OBJ_PROP unsafe_unretained, readonly 
+    #define SAFE_ARC_RELEASE(x)
+    #define SAFE_ARC_AUTORELEASE(x) (x)
+    #define SAFE_ARC_SUPER_DEALLOC()
 #else
-#define SAFE_ARC_PROP_RETAIN retain
-#define SAFE_ARC_RELEASE(x) ([(x) release])
-#define SAFE_ARC_AUTORELEASE(x) ([(x) autorelease])
-#define SAFE_ARC_SUPER_DEALLOC() ([super dealloc])
+    #define SAFE_ARC_PROP_RETAIN retain
+    #define SAFE_ARC_READONLY_OBJ_PROP readonly
+    #define SAFE_ARC_RELEASE(x) ([(x) release])
+    #define SAFE_ARC_AUTORELEASE(x) ([(x) autorelease])
+    #define SAFE_ARC_SUPER_DEALLOC() ([super dealloc])
 #endif
 
 @interface HTMLNode : NSObject {
@@ -71,15 +74,15 @@
 #pragma mark - navigation
 // Node navigation relative to current node (self)
 
-@property (readonly) HTMLNode *parent; // Returns the parent node
-@property (readonly) HTMLNode *nextSibling; // Returns the next sibling
-@property (readonly) HTMLNode *previousSibling; // Returns the previous sibling
-@property (readonly) HTMLNode *firstChild; // Returns the first child
-@property (readonly) HTMLNode *lastChild; // Returns the last child
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *parent; // Returns the parent node
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *nextSibling; // Returns the next sibling
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *previousSibling; // Returns the previous sibling
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *firstChild; // Returns the first child
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *lastChild; // Returns the last child
 
 
 // Returns the first level of children
-@property (readonly) NSArray *children;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *children;
 
 // Returns the number of children
 @property (readonly) NSUInteger childCount;
@@ -94,19 +97,19 @@
 - (NSString *)attributeForName:(NSString *)attributeName;
 
 // Returns all attributes and values as dictionary
-@property (readonly) NSDictionary *attributes;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSDictionary *attributes;
 
 // Returns the tag name
-@property (readonly) NSString *tagName;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *tagName;
 
 // Returns the value for the class attribute
-@property (readonly) NSString *className;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *className;
 
 // Returns the value for the href attribute
-@property (readonly) NSString *hrefValue;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *hrefValue;
 
 // Returns the value for the src attribute
-@property (readonly) NSString *srcValue;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *srcValue;
 
 // Returns the integer value
 @property (readonly) NSInteger integerValue;
@@ -139,21 +142,21 @@
 - (NSDate *)contentDateValueForFormat:(NSString *)dateFormat;
 
 // Returns the raw string value
-@property (readonly) NSString *rawStringValue;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *rawStringValue;
 
 // Returns the string value trimmed by whitespace and newline characters
-@property (readonly) NSString *stringValue;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *stringValue;
 
 // Returns the string value trimmed by whitespace and newline characters and
 // collapsing all multiple occurrences of whitespace and newline characters within the string into a single space
-@property (readonly) NSString *stringValueCollapsingWhitespace;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *stringValueCollapsingWhitespace;
 
 // Returns the raw html text dump
-@property (readonly) NSString *HTMLString;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *HTMLString;
 
 // Returns an array of all text content of children
 // each array item is trimmed by whitespace and newline characters
-@property (readonly) NSArray *textContentOfChildren;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *textContentOfChildren;
 
 // Returns the element type
 @property (readonly) xmlElementType elementType;
@@ -167,21 +170,21 @@
 #pragma mark - contents of current node and its descendants (descendant-or-self)
 
 // Returns the raw text content of descendant-or-self
-@property (readonly) NSString *rawTextContent;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *rawTextContent;
 
 // Returns the text content of descendant-or-self trimmed by whitespace and newline characters
-@property (readonly) NSString *textContent;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *textContent;
 
 // Returns the text content of descendant-or-self trimmed by whitespace and newline characters and
 // collapsing all multiple occurrences of whitespace and newline characters within the string into a single space
-@property (readonly) NSString *textContentCollapsingWhitespace;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *textContentCollapsingWhitespace;
 
 // Returns an array of all text content of descendant-or-self
 // each array item is trimmed by whitespace and newline characters
-@property (readonly) NSArray *textContentOfDescendants;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *textContentOfDescendants;
 
 // Returns the raw html text dump of descendant-or-self
-@property (readonly) NSString *HTMLContent;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *HTMLContent;
 
 
 #pragma mark - Query method declarations

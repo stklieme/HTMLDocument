@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.4 - 13. Nov 2012                                                    #
+ #	  Version 1.5 - 27. Jan 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -66,11 +66,11 @@
 @property (readonly) HTMLNode *rootNode;
 
 // frequently used nodes
-@property (readonly) HTMLNode *head;
-@property (readonly) HTMLNode *body;
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *head;
+@property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *body;
 
 // value of title tag
-@property (readonly) NSString *title;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *title;
 
 @end
 

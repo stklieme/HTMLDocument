@@ -7,7 +7,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.4 - 13. Nov 2012                                                    #
+ #	  Version 1.5 - 27. Jan 2013                                                    #
  #																					#
  #    usage:     add #import HTMLNode+XPath.h                                       #
  #                                                                                  #

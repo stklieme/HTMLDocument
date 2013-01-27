@@ -6,7 +6,7 @@
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.4 - 13. Nov 2012                                                    #
+ #	  Version 1.5 - 27. Jan 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -171,7 +171,9 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 }
 
 - (void)dealloc {
-    self.xpathError = nil;
+#if ! __has_feature(objc_arc)
+     self.xpathError = nil;
+#endif
     SAFE_ARC_SUPER_DEALLOC();
 }
 
