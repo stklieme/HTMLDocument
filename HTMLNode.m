@@ -245,6 +245,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (NSDictionary *)attributes
 {
+    if (xmlNode_ == NULL) return nil;
     if (self.isDocumentNode) return nil;
     
     NSMutableDictionary *result = [NSMutableDictionary dictionary];
@@ -1024,6 +1025,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 // includes type, name , number of children, attributes and the first 80 characters of raw content
 - (NSString *)description
 {
+    if (xmlNode_ == NULL) return nil;
     return [NSString stringWithFormat:@"type: %d - name: %@ - number of children: %lu\nattributes: %@\nHTML: %@",
             self.elementType,  self.tagName, (long)self.childCount, self.attributes, self.HTMLString];
 }
