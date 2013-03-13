@@ -372,15 +372,17 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
         if (buffer) {
             int result = xmlNodeDump(buffer, NULL, xmlNode_, 0, 0);
             if (result > -1) {
-                string = SAFE_ARC_AUTORELEASE([[NSString alloc] initWithBytes:(xmlBufferContent(buffer))
+                NSString *nodeDumpString = [[NSString alloc] initWithBytes:(xmlBufferContent(buffer))
                                                                        length:(xmlBufferLength(buffer))
-                                                                     encoding:NSUTF8StringEncoding]);
+                                                                     encoding:NSUTF8StringEncoding];
+                string = [nodeDumpString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                SAFE_ARC_RELEASE(temp);
             }
             xmlBufferFree(buffer);
         }
     }
     
-    return [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    return string;
 }
 
 void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursive)
