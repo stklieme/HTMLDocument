@@ -34,12 +34,18 @@
 
 #import "HTMLDocument.h"
 
-const char *convertStringEncoding(NSStringEncoding encoding);
+const char *convertStringEncoding(NSStringEncoding encoding, char * buffer, size_t bufferSize);
 
-const char * convertStringEncoding(NSStringEncoding encoding) {
+const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, size_t bufferSize) {
     CFStringEncoding cfEncoding = CFStringConvertNSStringEncodingToEncoding(encoding);
     CFStringRef cfEncodingAsString = CFStringConvertEncodingToIANACharSetName(cfEncoding);
-    return CFStringGetCStringPtr(cfEncodingAsString, kCFStringEncodingMacRoman);
+    const char * cEncoding = CFStringGetCStringPtr(cfEncodingAsString, kCFStringEncodingMacRoman);
+    if (! cEncoding) {
+        Boolean ok = CFStringGetCString(cfEncodingAsString, buffer, bufferSize, kCFStringEncodingMacRoman);
+        NSCAssert(ok, @"convertStringEncoding buffer too small");
+        cEncoding = buffer;
+    }
+    return cEncoding;
 }
 
 
@@ -91,7 +97,8 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
         NSInteger errorCode = 0;
 		if (data && [data length]) {
             int htmlParseOptions = HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING;
-            htmlDoc_ = htmlReadDoc(BAD_CAST [data bytes], NULL,  convertStringEncoding(encoding), htmlParseOptions);
+            char encodingBuffer[32];
+            htmlDoc_ = htmlReadMemory([data bytes], [data length], NULL,  convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), htmlParseOptions);
             if (htmlDoc_) {
                 xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(htmlDoc_);
                 if (xmlDocRootNode && xmlStrEqual(xmlDocRootNode->name, BAD_CAST "html")) {
@@ -239,7 +246,8 @@ const char * convertStringEncoding(NSStringEncoding encoding) {
         NSInteger errorCode = 0;
 		if (data && [data length]) {
             int xmlParseOptions = XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
-            xmlDoc_ = xmlReadDoc(BAD_CAST [data bytes], NULL, convertStringEncoding(encoding), xmlParseOptions);
+            char encodingBuffer[32];
+            xmlDoc_ = xmlReadMemory([data bytes], [data length], NULL, convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), xmlParseOptions);
             if (xmlDoc_) {
                 xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(xmlDoc_);
                 if (xmlDocRootNode) {
