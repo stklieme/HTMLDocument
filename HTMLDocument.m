@@ -98,7 +98,7 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 		if (data && [data length]) {
             int htmlParseOptions = HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING;
             char encodingBuffer[32];
-            htmlDoc_ = htmlReadMemory([data bytes], [data length], NULL,  convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), htmlParseOptions);
+            htmlDoc_ = htmlReadMemory([data bytes], (int)[data length], NULL,  convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), htmlParseOptions);
             if (htmlDoc_) {
                 xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(htmlDoc_);
                 if (xmlDocRootNode && xmlStrEqual(xmlDocRootNode->name, BAD_CAST "html")) {
@@ -247,7 +247,7 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 		if (data && [data length]) {
             int xmlParseOptions = XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
             char encodingBuffer[32];
-            xmlDoc_ = xmlReadMemory([data bytes], [data length], NULL, convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), xmlParseOptions);
+            xmlDoc_ = xmlReadMemory([data bytes], (int)[data length], NULL, convertStringEncoding(encoding, encodingBuffer, sizeof(encodingBuffer)), xmlParseOptions);
             if (xmlDoc_) {
                 xmlNodePtr xmlDocRootNode = xmlDocGetRootElement(xmlDoc_);
                 if (xmlDocRootNode) {
