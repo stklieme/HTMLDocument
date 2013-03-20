@@ -376,7 +376,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
                                                                        length:(xmlBufferLength(buffer))
                                                                      encoding:NSUTF8StringEncoding];
                 string = [nodeDumpString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                SAFE_ARC_RELEASE(temp);
+                SAFE_ARC_RELEASE(nodeDumpString);
             }
             xmlBufferFree(buffer);
         }
