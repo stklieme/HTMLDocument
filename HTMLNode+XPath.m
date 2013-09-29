@@ -3,11 +3,11 @@
  #    HTMLNode+XPath.m                                                              #
  #      Category of HTMLNode for XPath support                                      #
  #																					#
- #    Copyright © 2011 by Stefan Klieme                                             #
+ #    Copyright © 2011-2013 by Stefan Klieme                                        #
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.5 - 27. Jan 2013                                                    #
+ #	  Version 1.6 - 29. Sep 2013                                                    #
  #																					#
  #    usage:     add #import HTMLNode+XPath.h                                       #
  #                                                                                  #
@@ -55,7 +55,7 @@ static void XPathErrorCallback(void *node, xmlErrorPtr err)
     NSInteger errorCode = (NSInteger )err->code;
     if ((errorCode > 1199) && (errorCode < 1223)) { // filter XPath errors 1200 - 1222
         char *errMessage = err->message;
-        NSString *errorMessage = (errMessage) ? [NSString stringWithUTF8String:errMessage] : @"unknown error";
+        NSString *errorMessage = (errMessage) ? @(errMessage) : @"unknown error";
 #if __has_feature(objc_arc)
         [(__bridge_transfer HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
 #else
@@ -341,8 +341,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 {
     self.xpathError = [NSError errorWithDomain:@"com.klieme.HTMLDocument"
                                           code:code
-                                      userInfo:[NSDictionary dictionaryWithObject:message
-                                                                           forKey:NSLocalizedDescriptionKey]];
+                                      userInfo:@{NSLocalizedDescriptionKey: message}];
 }
 
 @end

@@ -2,11 +2,11 @@
  #																					#
  #    HTMLNode.m																	#
  #																					#
- #    Copyright © 2011 by Stefan Klieme                                             #
+ #    Copyright © 2011-2013 by Stefan Klieme                                        #
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.5 - 27. Jan 2013                                                    #
+ #	  Version 1.6 - 29. Sep 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -161,7 +161,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 #pragma mark - init method
 
 
-- (id)initWithXMLNode:(xmlNode *)xmlNode
+- (INSTANCETYPE_OR_ID)initWithXMLNode:(xmlNode *)xmlNode
 {
 	self = [super init];
     if (self) 	{
@@ -207,7 +207,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 - (HTMLNode *)childAtIndex:(NSUInteger)index
 {
 	NSArray *childrenArray = self.children;
-    return (index < [childrenArray count]) ? [childrenArray objectAtIndex:index] : nil;
+    return (index < [childrenArray count]) ? childrenArray[index] : nil;
 }
 
 - (NSArray *)children
@@ -237,7 +237,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     
     xmlChar *attributeValue = xmlGetProp(xmlNode_, BAD_CAST [name UTF8String]);
     if (attributeValue) {
-        result = [NSString stringWithUTF8String:(const char *)attributeValue];
+        result = @((const char *)attributeValue);
         xmlFree(attributeValue);
     }
     return result;
@@ -252,8 +252,8 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     NSString *value;
     
     for (xmlAttrPtr attr = xmlNode_->properties; attr ; attr = attr->next) {
-        value = [NSString stringWithUTF8String:(const char *)attr->children->content];
-        [result setValue:value forKey:[NSString stringWithUTF8String:(const char *)attr->name]];
+        value = @((const char *)attr->children->content);
+        [result setValue:value forKey:@((const char *)attr->name)];
     }
     
     return result;
@@ -262,7 +262,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
 
 - (NSString *)tagName
 {
-    return (self.isDocumentNode) ? nil : [NSString stringWithUTF8String:(const char *) xmlNode_->name];
+    return (self.isDocumentNode) ? nil : @((const char *) xmlNode_->name);
 }
 
 - (NSString *)className // actually classValue
@@ -346,7 +346,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     if (child && child->type != XML_ELEMENT_NODE) {
         xmlChar *string = child->content;
         if (string) {
-            return [NSString stringWithUTF8String:(const char *)string];
+            return @((const char *)string);
         }
     }
     
@@ -455,7 +455,7 @@ NSString * textContent(xmlNode *node)
     xmlChar *contents = xmlNodeGetContent(node);
     
     if (contents) {
-        NSString *string = [NSString stringWithUTF8String:(const char *)contents];
+        NSString *string = @((const char *)contents);
         xmlFree(contents);
         return string;
     }

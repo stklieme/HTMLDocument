@@ -2,11 +2,11 @@
  #																					#
  #    HTMLDocument.m																#
  #																					#
- #    Copyright © 2011 by Stefan Klieme                                             #
+ #    Copyright © 2011-2013 by Stefan Klieme                                        #
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.5 - 27. Jan 2013                                                    #
+ #	  Version 1.6 - 29. Sep 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -53,6 +53,29 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 @implementation HTMLDocument
 @synthesize rootNode;
 
+#pragma mark - error handling
+
+- (NSError *)errorForCode:(NSInteger )errorCode
+{
+    NSString *errorString = @"";
+    switch (errorCode) {
+        case 1:
+            errorString = @"No valid data";
+            break;
+            
+        case 2:
+            errorString = @"XML data could not be parsed";
+            break;
+            
+        case 3:
+            errorString = @"XML data seems not to be of type HTML";
+            break;
+    }
+    return [NSError errorWithDomain:[@"com.klieme." stringByAppendingString: NSStringFromClass([self class])]
+                               code:errorCode
+                           userInfo:@{NSLocalizedDescriptionKey: errorString}];
+}
+
 #pragma mark - class methods
 
 // convenience initializer methods
@@ -90,7 +113,7 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 #pragma mark - instance init methods
 
 // designated initializer
-- (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
     self = [super init];
     if (self) {
@@ -124,12 +147,12 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 	return self;
 }
 
-- (id)initWithData:(NSData *)data error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithData:(NSData *)data error:(NSError **)error
 {
 	return [self initWithData:data encoding:NSUTF8StringEncoding error:error];
 }
 
-- (id)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
     NSData *data = [NSData dataWithContentsOfURL:url options:0 error:error];
     if (data && *error == nil) {
@@ -138,19 +161,19 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 	return nil;
 }
 
-- (id)initWithContentsOfURL:(NSURL *)url error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithContentsOfURL:(NSURL *)url error:(NSError **)error
 {
 	return [self initWithContentsOfURL:url encoding:NSUTF8StringEncoding error:error];
 }
 
-- (id)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
 	return [self initWithData:[string dataUsingEncoding:encoding]
                      encoding:encoding
                         error:error];
 }
 
-- (id)initWithHTMLString:(NSString *)string error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithHTMLString:(NSString *)string error:(NSError **)error
 {
 	return [self initWithHTMLString:string encoding:NSUTF8StringEncoding error:error];
 }
@@ -178,29 +201,6 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 - (NSString *)title
 {
 	return [[self.head childOfTag:@"title"] stringValue];
-}
-
-#pragma mark - error handling
-
-- (NSError *)errorForCode:(NSInteger )errorCode
-{
-    NSString *errorString = nil;
-    switch (errorCode) {
-        case 1:
-            errorString = @"No valid data";
-            break;
-            
-        case 2:
-            errorString = @"XML data could not be parsed";
-            break;
-            
-        case 3:
-            errorString = @"XML data seems not to be of type HTML";
-            break;
-    }
-    return [NSError errorWithDomain:[@"com.klieme." stringByAppendingString: NSStringFromClass([self class])]
-                               code:errorCode
-                           userInfo:[NSDictionary dictionaryWithObject:errorString forKey:NSLocalizedDescriptionKey]];
 }
 
 
@@ -239,7 +239,7 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
     return SAFE_ARC_AUTORELEASE([[XMLDocument alloc] initWithHTMLString:string error:error]);
 }
 
-- (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
+- (INSTANCETYPE_OR_ID)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
     self = [super init];
     if (self) {

@@ -2,11 +2,11 @@
  #																					#
  #    HTMLDocument.h																#
  #																					#
- #    Copyright © 2011 by Stefan Klieme                                             #
+ #   Copyright © 2011-2013 by Stefan Klieme                                         #
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
  #																					#
- #	  Version 1.5 - 27. Jan 2013                                                    #
+ #	  Version 1.6 - 29. Sep 2013                                                    #
  #																					#
  #    usage:     add libxml2.dylib to frameworks                                    #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
@@ -45,31 +45,110 @@
 // convenience initializer methods
 // default text encoding is UTF-8
 
+/*! Returns an HTMLDocument object created from an NSData object with specified string encoding
+ * \param data A data object with HTML content
+ * \param encoding The string encoding for the HTML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding
+ * \param data A data object with HTML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithData:(NSData *)data error:(NSError **)error;
+
+/*! Returns an HTMLDocument object created from the HTML contents of a URL-referenced source with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the HTML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an HTMLDocument object created from the HTML contents of a URL-referenced source with assumed UTF-8 string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error;
+
+/*! Returns an HTMLDocument object created from a string containing HTML markup text with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the HTML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an HTMLDocument object created from a string containing HTML markup text with assumed UTF-8 string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the HTML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (HTMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error;
 
-// initializer
-- (id)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error; // designated initializer
-- (id)initWithData:(NSData *)data error:(NSError **)error;
-- (id)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
-- (id)initWithContentsOfURL:(NSURL *)url error:(NSError **)error;
-- (id)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
-- (id)initWithHTMLString:(NSString *)string error:(NSError **)error;
 
-- (NSError *)errorForCode:(NSInteger )errorCode;
+/*! Initializes and returns an HTMLDocument object created from an NSData object with specified string encoding
+ * \param data A data object with HTML or XML content
+ * \param encoding The string encoding for the HTML or XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
+- (INSTANCETYPE_OR_ID)initWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error; // designated initializer
 
-// root element (html node)
+/*! Initializes and returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding
+ * \param data A data object with HTML or XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
+- (INSTANCETYPE_OR_ID)initWithData:(NSData *)data error:(NSError **)error;
+
+/*! Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the HTML or XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
+- (INSTANCETYPE_OR_ID)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with assumed UTF-8 string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
+- (INSTANCETYPE_OR_ID)initWithContentsOfURL:(NSURL *)url error:(NSError **)error;
+
+/*! Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the HTML or XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
+- (INSTANCETYPE_OR_ID)initWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with assumed UTF-8 string encoding
+* \param url An NSURL object specifying a URL source
+* \param encoding The string encoding for the HTML or XML content
+* \param error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+* \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+*/
+- (INSTANCETYPE_OR_ID)initWithHTMLString:(NSString *)string error:(NSError **)error;
+
+
+/*! The root node*/
 @property (readonly) HTMLNode *rootNode;
 
-// frequently used nodes
+/*! The head node*/
 @property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *head;
+
+/*! The body node*/
 @property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *body;
 
-// value of title tag
+/*! The value of the title tag in the head node*/
 @property (SAFE_ARC_READONLY_OBJ_PROP) NSString *title;
 
 @end
@@ -81,11 +160,50 @@
     xmlDocPtr  xmlDoc_;
 }
 
+/*! Returns an XMLDocument object created from an NSData object with specified string encoding
+ * \param data A data object with XML content
+ * \param encoding The string encoding for the XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithData:(NSData *)data encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an XMLDocument object created from an NSData object with assumed UTF-8 string encoding
+ * \param data A data object with XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithData:(NSData *)data error:(NSError **)error;
+
+/*! Returns an XMLDocument object created from the XML contents of a URL-referenced source with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an XMLDocument object created from the XML contents of a URL-referenced source with assumed UTF-8 string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithContentsOfURL:(NSURL *)url error:(NSError **)error;
+
+/*! Returns an XMLDocument object created from a string containing XML markup text with specified string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithHTMLString:(NSString *)string encoding:(NSStringEncoding )encoding error:(NSError **)error;
+
+/*! Returns an XMLDocument object created from a string containing XML markup text with assumed UTF-8 string encoding
+ * \param url An NSURL object specifying a URL source
+ * \param encoding The string encoding for the XML content
+ * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
+ * \returns An initialized XMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+ */
 + (XMLDocument *)documentWithHTMLString:(NSString *)string error:(NSError **)error;
 
 

@@ -3,11 +3,11 @@
  #    HTMLNode+XPath.h                                                              #
  #      Category of HTMLNode for XPath support                                      #
  #																					#
- #    Copyright © 2011 by Stefan Klieme                                             #
+ #    Copyright © 2011-2013 by Stefan Klieme                                        #
  #																					#
  #	  Objective-C wrapper for HTML parser of libxml2								#
- #																					#
- #	  Version 1.5 - 27. Jan 2013                                                    #
+ #																	 				#
+ #	  Version 1.6 - 29. Sep 2013                                                    #
  #																					#
  #    usage:     add #import HTMLNode+XPath.h                                       #
  #                                                                                  #
@@ -51,70 +51,274 @@
 // Xpath query methods
 
 
-// Returns first descendant node for a XPath query
+/*! Returns the first descendant node for a XPath query
+ * \param query The XPath query string
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeForXPath:(NSString *)query error:(NSError **)error;
+
+/*! Returns the first descendant node for a XPath query
+ * \param query The XPath query string
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeForXPath:(NSString *)query;
 
-// Returns all descendant nodes for a XPath query
+/*! Returns all descendant nodes for a XPath query
+ * \param query The XPath query string
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesForXPath:(NSString *)query error:(NSError **)error;
+
+/*! Returns all descendant nodes for a XPath query
+ * \param query The XPath query string
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesForXPath:(NSString *)query;
 
 
 // Note: In the HTMLNode main class all appropriate query methods begin with descendant instead of node 
 
-// Returns first/all descendant node(s) with a matching tag name 
+/*! Returns the first descendant node for a specified tag name
+ * \param tagName The tag name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeOfTag:(NSString *)tagName error:(NSError **)error;
+
+/*! Returns the first descendant node for a specified tag name
+ * \param tagName The tag name
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeOfTag:(NSString *)tagName;
+
+/*! Returns all descendant nodes for a specified tag name
+ * \param tagName The tag name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesOfTag:(NSString *)tagName error:(NSError **)error;
+
+/*! Returns all descendant nodes for a specified tag name
+ * \param tagName The tag name
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesOfTag:(NSString *)tagName;
 
-// Returns first/all descendant node(s) with a matching tag name and matching attribute name
+/*! Returns the first descendant node for a matching tag name and matching attribute name
+ * \param tagName The tag name
+ * \param attributeName The attribute name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error;
+
+/*! Returns the first descendant node for a matching tag name and matching attribute name
+ * \param tagName The tag name
+ * \param attributeName The attribute name
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName;
+
+/*! Returns all descendant nodes for a matching tag name and matching attribute name
+ * \param tagName The tag name
+ * \param attributeName The attribute name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error;
+
+/*! Returns all descendant nodes for a matching tag name and matching attribute name
+ * \param tagName The tag name
+ * \param attributeName The attribute name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName;
 
-// Returns first/all descendant node(s) with a matching attribute name
+/*! Returns the first descendant node for a specified attribute name
+ * \param attributeName The attribute name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName error:(NSError **)error;
+
+/*! Returns the first descendant node for a specified attribute name
+ * \param attributeName The attribute name
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName;
+
+/*! Returns all descendant nodes for a specified attribute name
+ * \param attributeName The attribute name
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName error:(NSError **)error;
+
+/*! Returns all descendant nodes for a specified attribute name
+ * \param attributeName The attribute name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName;
 
-// Returns first/all descendant node(s) with a matching attribute name and value
+/*! Returns the first descendant node for a matching attribute name and matching attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error;
+
+/*! Returns the first descendant node for a matching attribute name and matching attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value;
+
+/*! Returns all descendant nodes for a matching attribute name and matching attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error;
+
+/*! Returns all descendant nodes for a matching attribute name and matching attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value;
 
-// Returns first/all descendant node(s) with a matching attribute name and matching the beginning of its value
+
+/*! Returns the first descendant node for a matching attribute name and beginning of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error;
+
+/*! Returns the first descendant node for a matching attribute name and beginning of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value;
+
+/*! Returns all descendant nodes for a matching attribute name and beginning of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error;
+
+/*! Returns all descendant nodes for a matching attribute name and beginning of the attribute value
+* \param attributeName The attribute name
+* \param value The attribute value
+* \returns The array of all found descendant nodes or an empty array
+*/
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value;
 
-// Returns first/all descendant node(s) with a matching attribute name and matching the end of its value
+/*! Returns the first descendant node for a matching attribute name and ending of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error;
+
+/*! Returns the first descendant node for a matching attribute name and ending of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value;
+
+/*! Returns all descendant nodes for a matching attribute name and ending of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error;
+
+/*! Returns all descendant nodes for a matching attribute name and ending of the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value;
 
-// Returns first/all descendant node(s) with a matching attribute name and containing its value
+/*! Returns the first descendant node for a matching attribute name and containing the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error;
+
+/*! Returns the first descendant node for a matching attribute name and containing the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithAttribute:(NSString *)attributeName valueContains:(NSString *)value;
+
+/*! Returns all descendant nodes for a matching attribute name and containing the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error;
+
+/*! Returns all descendant nodes for a matching attribute name and containing the attribute value
+ * \param attributeName The attribute name
+ * \param value The attribute value
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value;
 
-// Returns first/all descendant node(s) with a matching class attribute name
+/*! Returns the first descendant node for a specified class name
+ * \param classValue The class name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithClass:(NSString *)classValue error:(NSError **)error;
+
+/*! Returns the first descendant node for a specified class name
+ * \param classValue The class name
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
 - (HTMLNode *)nodeWithClass:(NSString *)classValue;
+
+/*! Returns all descendant nodes for a specified class name
+ * \param classValue The class name
+ * \param error An error object that, on return, identifies any Xpath errors.
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithClass:(NSString *)classValue error:(NSError **)error;
+
+/*! Returns all descendant nodes for a specified class name
+ * \param classValue The class name
+ * \returns The array of all found descendant nodes or an empty array
+ */
 - (NSArray *)nodesWithClass:(NSString *)classValue;
 
 
 // Compare two nodes w.r.t document order with XPath
+/*! Returns a Boolean value that indicates whether the receiver is equal to another given object
+ * \param node The node with which to compare the receiver
+ * \returns YES if the receiver is equal to the node, otherwise NO. In effect returns NO if receiver is nil
+ */
 - (BOOL)isEqual:(HTMLNode *)node;
 
-// XPath error handling
+
 - (void)setErrorWithMessage:(NSString *)message andCode:(NSInteger)code;
 
 @end
