@@ -55,7 +55,7 @@ static void XPathErrorCallback(void *node, xmlErrorPtr err)
     NSInteger errorCode = (NSInteger )err->code;
     if ((errorCode > 1199) && (errorCode < 1223)) { // filter XPath errors 1200 - 1222
         char *errMessage = err->message;
-        NSString *errorMessage = (errMessage) ? @(errMessage) : @"unknown error";
+        NSString *errorMessage = (errMessage) ? [NSString stringWithUTF8String:errMessage] : @"unknown error";
 #if __has_feature(objc_arc)
         [(__bridge_transfer HTMLNode *)node setErrorWithMessage:errorMessage andCode:errorCode];
 #else
