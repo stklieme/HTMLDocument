@@ -94,7 +94,7 @@
 @property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *parent;
 
 /*! The next sibling node
- * \returns The parent node or nil
+ * \returns The next sibling node or nil
  */
 @property (SAFE_ARC_READONLY_OBJ_PROP) HTMLNode *nextSibling;
 
@@ -131,12 +131,12 @@
 
 /*! The attribute value of a node matching a given name
  * \param attributeName A name of an attribute
- * \returns The attribute value or nil if the attributed could not be found
+ * \returns The attribute value or nil if the attribute could not be found
  */
 - (NSString *)attributeForName:(NSString *)attributeName;
 
 /*! All attributes and values as dictionary
- * \returns a dictionary which could be empty if there are no attributed. Returns nil if the node is nil or is document node
+ * \returns a dictionary which could be empty if there are no attributes. Returns nil if the node is nil or is document node
  */
 @property (SAFE_ARC_READONLY_OBJ_PROP) NSDictionary *attributes;
 
