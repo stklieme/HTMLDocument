@@ -48,6 +48,11 @@
 
 @interface HTMLNode (XPath)
 
+/*! Returns the inner xmlNode, which you can use to check for equality
+ * \returns The inner xmlNode
+ */
+- (xmlNode *)xmlNode;
+
 // Xpath query methods
 
 

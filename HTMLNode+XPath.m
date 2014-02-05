@@ -123,7 +123,7 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 
 @implementation HTMLNode (XPath)
 
-#pragma mark - private getter
+#pragma mark - inner node getter
 
 - (xmlNode *)xmlNode
 {
