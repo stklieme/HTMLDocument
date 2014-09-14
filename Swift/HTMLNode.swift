@@ -213,10 +213,9 @@ class HTMLNode : SequenceType, Equatable, Printable {
     // see also the 'generate()' function
     
     var children : Array<HTMLNode> {
-        var currentNode : xmlNodePtr
         var array = [HTMLNode]()
         if let node = self.node {
-            for currentNode = node.children; currentNode != nil && xmlNodeIsText(currentNode) == 0; currentNode = currentNode.memory.next {
+            for var currentNode = node.children; currentNode != nil && xmlNodeIsText(currentNode) == 0; currentNode = currentNode.memory.next {
                 let node = HTMLNode(pointer:currentNode)
                 array.append(node)
             }
@@ -255,7 +254,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         if let uPointer = self.pointer {
             let attributeValue = xmlGetProp(uPointer, xmlCharFrom(name))
-            if (attributeValue != nil) {
+            if attributeValue != nil {
                 let result = stringFrom(attributeValue)
                 free(attributeValue)
                 return result
@@ -272,7 +271,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
         if let properties = self.node?.properties {
             
             var result = Dictionary<String, String>()
-            for (var attr = properties; attr != nil ; attr = attr.memory.next) {
+            for var attr = properties; attr != nil ; attr = attr.memory.next {
                 let attrData = attr.memory
                 let value = stringFrom(attrData.children.memory.content)
                 let key = stringFrom(attrData.name)
@@ -457,7 +456,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
             var buffer : xmlBufferPtr = xmlBufferCreate()
             if buffer != nil {
                 let err : Int32 = xmlNodeDump(buffer, nil, self.pointer!, 0, 0)
-                if (err > -1) {
+                if err > -1 {
                     result = stringFrom(buffer.memory.content).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
                 }
                 xmlBufferFree(buffer)
@@ -469,26 +468,20 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func textContentOfChildren(nodePtr : xmlNodePtr, inout array : Array<String>, recursive : Bool)
     {
-        var currentNode : xmlNodePtr?
-        var content : String?
-        
-        for (currentNode = nodePtr; currentNode != nil; currentNode = currentNode!.memory.next) {
+        for var currentNode = nodePtr; currentNode != nil; currentNode = currentNode.memory.next {
             
-            content = textContent(currentNode!)
-            if content != nil {
-                if content!.isEmpty {
-                    array.append(content!)
-                } else {
-                    var nsContent = content as NSString!
-                    content = nsContent.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-                    if content!.isEmpty == false {
-                        array.append(content!)
-                    }
+            let content = textContent(currentNode)
+            if content.isEmpty {
+                array.append(content)
+            } else {
+                let trimmedContent = content.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+                if trimmedContent.isEmpty == false {
+                    array.append(trimmedContent)
                 }
             }
             
             if recursive {
-                textContentOfChildren(currentNode!.memory.children, array: &array, recursive: recursive)
+                textContentOfChildren(currentNode.memory.children, array: &array, recursive: recursive)
             }
         }
     }
@@ -675,17 +668,15 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func childWithAttribute(attrName : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    return HTMLNode(pointer: currentNodePtr!)
+                    return HTMLNode(pointer: currentNodePtr)
                 }
             }
             
             if recursive {
-                if let subNode = childWithAttribute(attrName, nodePtr: currentNodePtr!.memory.children, recursive: recursive) {
+                if let subNode = childWithAttribute(attrName, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
                     return subNode
                 }
             }
@@ -696,21 +687,19 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func childWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
                     let child = attr.memory.children
                     if child != nil && xmlStrEqual(child.memory.content, attrValue) == 1 {
-                        return HTMLNode(pointer: currentNodePtr!)
+                        return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
             if (recursive) {
-                if let subNode = childWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr!.memory.children, recursive: recursive) {
+                if let subNode = childWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
                     return subNode
                 }
             }
@@ -721,21 +710,19 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func childWithAttributeValueContains(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
                     let child = attr.memory.children
                     if child != nil && xmlStrstr(child.memory.content, attrValue) != nil {
-                        return HTMLNode(pointer: currentNodePtr!)
+                        return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
             if (recursive) {
-                if let subNode = childWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr!.memory.children, recursive: recursive) {
+                if let subNode = childWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
                     return subNode
                 }
             }
@@ -747,20 +734,18 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         if attrName == nil { return }
         
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr!)
+                    let matchingNode = HTMLNode(pointer: currentNodePtr)
                     array.append(matchingNode)
                     break
                 }
             }
             
             if (recursive)  {
-                childrenWithAttribute(attrName, nodePtr: currentNodePtr!.memory.children, array:&array, recursive:recursive)
+                childrenWithAttribute(attrName, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
         }
     }
@@ -770,15 +755,13 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         if attrName == nil { return }
         
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
                     let child = attr.memory.children
                     if child != nil && xmlStrEqual(child.memory.content, attrValue) == 1 {
-                        let matchingNode = HTMLNode(pointer: currentNodePtr!)
+                        let matchingNode = HTMLNode(pointer: currentNodePtr)
                         array.append(matchingNode)
                         break
                     }
@@ -786,7 +769,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
             }
             
             if (recursive)  {
-                childrenWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr!.memory.children, array:&array, recursive:recursive)
+                childrenWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
         }
     }
@@ -796,15 +779,13 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         if attrName == nil { return }
         
-        var currentNodePtr : xmlNodePtr?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for (var attr : xmlAttrPtr = currentNodePtr!.memory.properties; attr != nil ; attr = attr.memory.next) {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
                     let child = attr.memory.children
                     if child != nil && xmlStrstr(child.memory.content, attrValue) != nil {
-                        let matchingNode = HTMLNode(pointer: currentNodePtr!)
+                        let matchingNode = HTMLNode(pointer: currentNodePtr)
                         array.append(matchingNode)
                         break
                     }
@@ -812,7 +793,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
             }
             
             if (recursive)  {
-                childrenWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr!.memory.children, array:&array, recursive:recursive)
+                childrenWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
             
         }
@@ -1147,21 +1128,16 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func childOfTagValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
-        
-        var currentNodePtr, childNodePtr : xmlNodePtr?
-        var childName : UnsafeMutablePointer<xmlChar>?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
-            if xmlStrEqual(currentNodePtr!.memory.name, value) == 1 {
-                
-                childNodePtr = currentNodePtr!.memory.children
-                childName = (childNodePtr != nil) ? childNodePtr!.memory.content : nil
-                if childName != nil && xmlStrEqual(childName!, value) == 1 {
-                    return HTMLNode(pointer: currentNodePtr!)
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
+                let childNodePtr = currentNodePtr.memory.children
+                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+                if childContent != nil && xmlStrEqual(childContent, value) == 1 {
+                    return HTMLNode(pointer: currentNodePtr)
                 }
             }
             if recursive {
-                if let subNode = childOfTagValueMatches(tagName, value:value, nodePtr: currentNodePtr!.memory.children, recursive:recursive) {
+                if let subNode = childOfTagValueMatches(tagName, value:value, nodePtr: currentNodePtr.memory.children, recursive:recursive) {
                     return subNode
                     
                 }
@@ -1172,20 +1148,16 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     private func childOfTagValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
-        var currentNodePtr, childNodePtr : xmlNodePtr?
-        var childName : UnsafeMutablePointer<xmlChar>?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
-            if xmlStrEqual(currentNodePtr!.memory.name, value) == 1 {
-                
-                childNodePtr = currentNodePtr!.memory.children
-                childName = (childNodePtr != nil) ? childNodePtr!.memory.content : nil
-                if childName != nil  && xmlStrstr(childName!, value) != nil {
-                    return HTMLNode(pointer: currentNodePtr!)
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
+                let childNodePtr = currentNodePtr.memory.children
+                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+                if childContent != nil  && xmlStrstr(childContent, value) != nil {
+                    return HTMLNode(pointer: currentNodePtr)
                 }
             }
             if recursive {
-                if let subNode = childOfTagValueContains(tagName, value:value, nodePtr: currentNodePtr!.memory.children, recursive:recursive) {
+                if let subNode = childOfTagValueContains(tagName, value:value, nodePtr: currentNodePtr.memory.children, recursive:recursive) {
                     return subNode
                     
                 }
@@ -1283,21 +1255,18 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         if tagName == nil { return }
         
-        var currentNodePtr, childNodePtr : xmlNodePtr?
-        var childName : UnsafeMutablePointer<xmlChar>?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
-            if xmlStrEqual(currentNodePtr!.memory.name, value) == 1 {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
                 
-                childNodePtr = currentNodePtr!.memory.children
-                childName = (childNodePtr != nil) ? childNodePtr!.memory.content : nil
-                if childName != nil && xmlStrEqual(childName!, value) == 1 {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr!)
+                let childNodePtr = currentNodePtr.memory.children
+                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+                if childContent != nil && xmlStrEqual(childContent, value) == 1 {
+                    let matchingNode = HTMLNode(pointer: currentNodePtr)
                     array.append(matchingNode)
                 }
             }
             if (recursive) {
-                childrenOfTagValueMatches(tagName, value:value, nodePtr:currentNodePtr!.memory.children, array:&array, recursive:recursive)
+                childrenOfTagValueMatches(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
         }
     }
@@ -1305,21 +1274,19 @@ class HTMLNode : SequenceType, Equatable, Printable {
     private func childrenOfTagValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
     {
         if tagName == nil { return }
-        
-        var currentNodePtr, childNodePtr : xmlNodePtr?
-        var childName : UnsafeMutablePointer<xmlChar>?
-        
-        for (currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr!.memory.next) {
-            if xmlStrEqual(currentNodePtr!.memory.name, value) == 1 {
-                childNodePtr = currentNodePtr!.memory.children
-                childName = (childNodePtr != nil) ? childNodePtr!.memory.content : nil
-                if childName != nil && xmlStrstr(childName!, value) != nil {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr!)
+
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
+                
+                let childNodePtr = currentNodePtr.memory.children
+                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+                if childContent != nil && xmlStrstr(childContent, value) != nil {
+                    let matchingNode = HTMLNode(pointer: currentNodePtr)
                     array.append(matchingNode)
                 }
             }
             if (recursive) {
-                childrenOfTagValueContains(tagName, value:value, nodePtr:currentNodePtr!.memory.children, array:&array, recursive:recursive)
+                childrenOfTagValueContains(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
         }
     }
