@@ -1573,7 +1573,6 @@ class HTMLNode : SequenceType, Equatable, Printable {
     func generate() -> GeneratorOf<HTMLNode> {
         var node = self.pointer?.memory.children
         return GeneratorOf<HTMLNode> {
-            println("node is " + ((node == nil) ? "nil" : "not nil"))
             if xmlNodeIsText(node!) == 1 {
                 node = node!.memory.next
                 if node!.hashValue == 0 { return .None }
