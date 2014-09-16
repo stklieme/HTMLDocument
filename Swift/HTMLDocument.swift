@@ -36,11 +36,11 @@
 
 import Foundation
 
-class HTMLDocument {
+class HTMLDocument : NSObject {
     
     /** The class name */
     
-    var className : String {
+    override var className : String {
         return "HTMLDocument"
     }
     
@@ -65,11 +65,8 @@ class HTMLDocument {
     }
     
     /** The value of the title tag in the head node*/
-    var title: String {
-        if let titleNode = head?.childOfTag("title") {
-            return titleNode.stringValue
-        }
-        return ""
+    var title: String? {
+        return head?.childOfTag("title")?.stringValue
     }
     
     
@@ -87,6 +84,7 @@ class HTMLDocument {
     // designated initializer
     init(data: NSData?, encoding: NSStringEncoding, error: NSErrorPointer)
     {
+        super.init()
         var errorCode = 0
         if let actualData = data {
             if actualData.length > 0 {
@@ -114,6 +112,7 @@ class HTMLDocument {
         if errorCode != 0 && error != nil {
             error.memory = errorForCode(errorCode)
         }
+       
     }
     
     /*! Initializes and returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding
@@ -136,7 +135,8 @@ class HTMLDocument {
     
     convenience init(contentsOfURL url:NSURL, encoding:NSStringEncoding, inout error:NSError?)
     {
-        let data = NSData.dataWithContentsOfURL(url, options:NSDataReadingOptions.fromMask(0), error:&error)
+        let options = NSDataReadingOptions(rawValue: 0)
+        let data = NSData(contentsOfURL:url, options:options, error:&error)
         self.init(data:data, encoding:encoding, error:&error)
     }
     
@@ -148,8 +148,7 @@ class HTMLDocument {
     
     convenience init(contentsOfURL url: NSURL, inout error: NSError?)
     {
-        let data = NSData.dataWithContentsOfURL(url, options:NSDataReadingOptions.fromMask(0), error:&error)
-        self.init(data:data, encoding:NSUTF8StringEncoding, error:&error)
+        self.init(contentsOfURL:url, encoding:NSUTF8StringEncoding, error:&error)
     }
     
     /*! Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with specified string encoding

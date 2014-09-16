@@ -64,9 +64,9 @@ private enum XMLElementType : UInt32
 
 extension NSString {
     
-    func collapseCharactersinSet(characterSet: NSCharacterSet?,  usingSeparator separator: NSString) -> NSString
+    func collapseCharactersinSet(characterSet: NSCharacterSet?,  usingSeparator separator: NSString) -> NSString?
     {
-        if self.length == 0 || characterSet == nil {
+        if characterSet == nil {
             return self
         }
         
@@ -75,7 +75,7 @@ extension NSString {
         return result
     }
     
-    func collapseWhitespaceAndNewLine() -> NSString
+    func collapseWhitespaceAndNewLine() -> NSString?
     {
         return self.collapseCharactersinSet(NSCharacterSet.whitespaceAndNewlineCharacterSet(), usingSeparator:" ")
     }
@@ -118,7 +118,7 @@ extension NSString {
 }
 
 
-class HTMLNode : SequenceType, Equatable, Printable {
+@objc class HTMLNode : SequenceType, Equatable, Printable {
     
     /*!
     * Constants
@@ -250,7 +250,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     * \returns The attribute value or ab empty string if the attribute could not be found
     */
     
-    func attributeForName(name : String) -> String
+    func attributeForName(name : String) -> String?
     {
         if let uPointer = self.pointer {
             let attributeValue = xmlGetProp(uPointer, xmlCharFrom(name))
@@ -260,7 +260,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
                 return result
             }
         }
-        return ""
+        return nil
     }
     
     /*! All attributes and values as dictionary
@@ -274,8 +274,8 @@ class HTMLNode : SequenceType, Equatable, Printable {
             for var attr = properties; attr != nil ; attr = attr.memory.next {
                 let attrData = attr.memory
                 let value = stringFrom(attrData.children.memory.content)
-                let key = stringFrom(attrData.name)
-                result[key] = value
+                let key = stringFrom(attrData.name)!
+                result[key] = value!
             }
             return result
         }
@@ -286,35 +286,35 @@ class HTMLNode : SequenceType, Equatable, Printable {
     * \returns The tag name or an empty string
     */
     
-    var tagName : String {
-        if let name = self.node?.name {
-            return stringFrom(name)
+    var tagName : String? {
+        if let node = self.node {
+            return stringFrom(node.name)
         }
-        return ""
+        return nil
     }
     
     /*! The value for the class attribute*/
     
-    var className : String { // actually classValue
+    var className : String? { // actually classValue
         return attributeForName(kClassKey)
     }
     
     /*! The value for the href attribute*/
     
-    var hrefValue : String {
+    var hrefValue : String? {
         return attributeForName("href")
     }
     
     /*! The value for the src attribute*/
     
-    var srcValue : String {
+    var srcValue : String? {
         return attributeForName("src")
     }
     
     /*! The integer value*/
     
     var integerValue : Int {
-        if let intValue = self.stringValue.toInt() {
+        if let intValue = self.stringValue?.toInt() {
             return intValue
         }
         return 0
@@ -333,7 +333,10 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     func doubleValueForLocaleIdentifier(identifier : String) -> Double
     {
-        return self.stringValue.doubleValueForLocaleIdentifier(identifier)
+        if let string = self.stringValue {
+            return string.doubleValueForLocaleIdentifier(identifier)
+        }
+        return 0.0
     }
     
     /*! Returns the double value of the string value for a specified locale identifier considering a plus sign prefix
@@ -344,7 +347,10 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     func doubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag : Bool) -> Double
     {
-        return self.stringValue.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        if let string = self.stringValue {
+            return string.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        }
+        return 0.0
     }
     
     /*! Returns the double value of the text content for a specified locale identifier
@@ -354,7 +360,10 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     func contentDoubleValueForLocaleIdentifier(identifier : String) -> Double
     {
-        return self.textContent.doubleValueForLocaleIdentifier(identifier)
+        if let content = self.textContent {
+            return content.doubleValueForLocaleIdentifier(identifier)
+        }
+        return 0.0
     }
     
     /*! Returns the double value of the text content for a specified locale identifier considering a plus sign prefix
@@ -365,7 +374,10 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     func contentDoubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag: Bool) -> Double
     {
-        return self.textContent.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        if let content = self.textContent {
+            return content.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        }
+        return 0.0
     }
     
     /*! Returns the date value of the string value for a specified date format and time zone
@@ -377,7 +389,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
     func dateValueForFormat(dateFormat: String, timeZone: NSTimeZone) -> NSDate?
     {
-        return self.stringValue.dateValueWithFormat(dateFormat, timeZone:timeZone)
+        return self.stringValue?.dateValueWithFormat(dateFormat, timeZone:timeZone)
     }
     
     /*! Returns the date value of the text content for a specified date format and time zone
@@ -388,7 +400,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     func contentDateValueForFormat(dateFormat: String, timeZone: NSTimeZone) -> NSDate?
     {
-        return self.textContent.dateValueWithFormat(dateFormat, timeZone:timeZone)
+        return self.textContent?.dateValueWithFormat(dateFormat, timeZone:timeZone)
     }
     
     /*! Returns the date value of the string value for a specified date format
@@ -416,48 +428,45 @@ class HTMLNode : SequenceType, Equatable, Printable {
     * \returns The raw string value or an empty string
     */
     
-    var rawStringValue : String {
+    var rawStringValue : String? {
         if let node = self.node {
             if node.children != nil {
-                let string = node.children.memory.content
-                if string != nil {
-                    return stringFrom(string)
-                }
+                return stringFrom(node.children.memory.content)
             }
         }
-        return ""
+        return nil
     }
     
     /*! The string value of a node trimmed by whitespace and newline characters
     * \returns The string value or an empty string
     */
     
-    var stringValue : String {
-        return self.rawStringValue.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+    var stringValue : String? {
+        return self.rawStringValue?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
     }
     
     /*! The string value of a node trimmed by whitespace and newline characters and collapsing all multiple occurrences of whitespace and newline characters within the string into a single space
     * \returns The trimmed and collapsed string value or an empty string
     */
     
-    var stringValueCollapsingWhitespace : String
+    var stringValueCollapsingWhitespace : String?
         {
-            return self.stringValue.collapseWhitespaceAndNewLine()
+            return self.stringValue?.collapseWhitespaceAndNewLine()
     }
     
     /*! The raw html text dump
     * \returns The raw html text dump or an empty string
     */
     
-    var HTMLString : String {
-        var result = ""
+    var HTMLString : String? {
+        var result : String?
         
         if self.node != nil {
             var buffer : xmlBufferPtr = xmlBufferCreate()
             if buffer != nil {
                 let err : Int32 = xmlNodeDump(buffer, nil, self.pointer!, 0, 0)
                 if err > -1 {
-                    result = stringFrom(buffer.memory.content).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+                    result = stringFrom(buffer.memory.content)!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
                 }
                 xmlBufferFree(buffer)
             }
@@ -470,13 +479,14 @@ class HTMLNode : SequenceType, Equatable, Printable {
     {
         for var currentNode = nodePtr; currentNode != nil; currentNode = currentNode.memory.next {
             
-            let content = textContent(currentNode)
-            if content.isEmpty {
-                array.append(content)
-            } else {
-                let trimmedContent = content.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-                if trimmedContent.isEmpty == false {
-                    array.append(trimmedContent)
+            if let content = textContent(currentNode) {
+                if content.isEmpty {
+                    array.append(content)
+                } else {
+                    let trimmedContent = content.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+                    if trimmedContent.isEmpty == false {
+                        array.append(trimmedContent)
+                    }
                 }
             }
             
@@ -488,10 +498,10 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     /*! The element type of the node*/
     
-    var elementType : String {
+    var elementType : String? {
         if let node = self.node {
             let rawType = xmlElementTypeToInt(node.type)
-            if let nodeType = XMLElementType.fromRaw(rawType) {
+            if let nodeType = XMLElementType(rawValue:rawType) {
                 
                 switch nodeType {
                     
@@ -519,7 +529,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
                 }
             }
         }
-        return ""
+        return nil
     }
     
     /*! Is the node an attribute node
@@ -528,7 +538,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     var isAttributeNode : Bool? {
         if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.toRaw()
+            return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.rawValue
         }
         return nil
     }
@@ -539,7 +549,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     var isDocumentNode : Bool? {
         if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.toRaw()
+            return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.rawValue
         }
         return nil
     }
@@ -550,7 +560,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     var isElementNode : Bool? {
         if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.toRaw()
+            return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.rawValue
         }
         return nil
     }
@@ -561,8 +571,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     var isTextNode : Bool? {
         if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.toRaw()
-        }
+            return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.rawValue        }
         return nil
     }
     
@@ -581,7 +590,7 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     // MARK: - attributes and values of current node and its descendants (descendant-or-self)
     
-    private func textContent(nodePtr : xmlNodePtr?) -> String
+    private func textContent(nodePtr : xmlNodePtr?) -> String?
     {
         if let pointer = nodePtr{
             let contents = xmlNodeGetContent(pointer)
@@ -592,14 +601,14 @@ class HTMLNode : SequenceType, Equatable, Printable {
                 return string!
             }
         }
-        return ""
+        return nil
     }
     
     /*! The raw text content of descendant-or-self
     * \returns The raw text content of the node and all its descendants or an empty string
     */
     
-    var rawTextContent : String {
+    var rawTextContent : String? {
         return textContent(self.pointer)
     }
     
@@ -607,16 +616,16 @@ class HTMLNode : SequenceType, Equatable, Printable {
     * \returns The trimmed text content of the node and all its descendants or an empty string
     */
 
-    var textContent : String {
-        return textContent(self.pointer).stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+    var textContent : String? {
+        return textContent(self.pointer)?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
     }
     
     /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
     * \returns An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string
     */
     
-    var textContentCollapsingWhitespace : String {
-        return self.textContent.collapseWhitespaceAndNewLine()
+    var textContentCollapsingWhitespace : String? {
+        return self.textContent?.collapseWhitespaceAndNewLine()
     }
     
     /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
@@ -635,9 +644,9 @@ class HTMLNode : SequenceType, Equatable, Printable {
     * \returns The raw html text dump of the node and all its descendants or an empty string
     */
     
-    var HTMLContent : String
+    var HTMLContent : String?
         {
-            var result : String = ""
+            var result : String?
             if let node = self.node {
                 var xmlBuffer = xmlBufferCreateSize(DUMP_BUFFER_SIZE)
                 var outputBuffer : xmlOutputBufferPtr = xmlOutputBufferCreateBuffer(xmlBuffer, nil)
@@ -1521,18 +1530,15 @@ class HTMLNode : SequenceType, Equatable, Printable {
     
     // creates a String from a xmlChar
     
-    func stringFrom(char: UnsafePointer<xmlChar>) -> String {
-        if let string = String.fromCString(UnsafePointer<CChar>(char)) {
-            return string
-        }
-        return ""
+    func stringFrom(xmlchar: UnsafePointer<xmlChar>) -> String? {
+        return String.fromCString(UnsafePointer<CChar>(xmlchar))
     }
     
     // creates a xmlChar from a String
     
     func xmlCharFrom(string: String) -> UnsafePointer<xmlChar> {
-        let data = string.dataUsingEncoding(NSUTF8StringEncoding)!
-        return UnsafePointer<xmlChar>(data.bytes)
+        let cString = string.cStringUsingEncoding(NSUTF8StringEncoding)!
+        return UnsafePointer<xmlChar>(cString)
     }
     
     // sequence generator to be able to write "for item in HTMLNode" as a shortcut for "for item in HTMLNode.children"
