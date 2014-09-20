@@ -1,19 +1,20 @@
 /*###################################################################################
- #																					#
- #    HTMLNode.h																	#
- #																					#
- #    Copyright © 2011-2013 by Stefan Klieme                                        #
- #																					#
- #	  Objective-C wrapper for HTML parser of libxml2								#
- #																					#
- #	  Version 1.6 - 29. Sep 2013                                                    #
- #																					#
- #    usage:     add libxml2.dylib to frameworks                                    #
- #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
- #               add -lxml2 to target -> other linker flags                         #
+ #                                                                                  #
+ #     HTMLNode.h                                                                   #
+ #                                                                                  #
+ #     Copyright © 2014 by Stefan Klieme                                            #
+ #                                                                                  #
+ #     Objective-C wrapper for HTML parser of libxml2                               #
+ #                                                                                  #
+ #     Version 1.7 - 20. Sep 2014                                                   #
+ #                                                                                  #
+ #     usage:     add libxml2.dylib to frameworks                                   #
+ #                add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths #
+ #                add -lxml2 to target -> other linker flags                        #
+ #                                                                                  #
  #                                                                                  #
  ####################################################################################
- #																					#
+ #                                                                                  #
  # Permission is hereby granted, free of charge, to any person obtaining a copy of  #
  # this software and associated documentation files (the "Software"), to deal       #
  # in the Software without restriction, including without limitation the rights     #
@@ -27,9 +28,9 @@
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
  # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
- # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
- #																					#
- ###################################################################################*/
+ # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.    #
+ #                                                                                  #
+ ##################################################################################*/
 
 #import <Foundation/Foundation.h>
 #import <libxml/tree.h>
@@ -326,6 +327,48 @@
  * \returns The first found sibling node or nil if no node matches the parameters
  */
 - (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+
+/*! Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
+- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns the first child node with the specifed attribute name and the value begins with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found child node or nil if no node matches the parameters
+ */
+- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found sibling node or nil if no node matches the parameters
+ */
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns the first descendant node with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found descendant node or nil if no node matches the parameters
+ */
+- (HTMLNode *)descendantWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+
+/*! Returns the first child node with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found child node or nil if no node matches the parameters
+ */
+- (HTMLNode *)childWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+
+/*! Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The first found sibling node or nil if no node matches the parameters
+ */
+- (HTMLNode *)siblingWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
 
 
 /*! Returns all descendant nodes with the specifed attribute name and value matching exactly

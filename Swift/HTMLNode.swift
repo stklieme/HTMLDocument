@@ -6,7 +6,7 @@
 #                                                                                   #
 #    Swift wrapper for HTML parser of libxml2                                       #
 #                                                                                   #
-#    Version 1.0 - 15. Sep 2014                                                     #
+#    Version 0.9 - 20. Sep 2014                                                     #
 #                                                                                   #
 #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
 #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
@@ -82,7 +82,6 @@ extension NSString {
     
     // ISO 639 identifier e.g. en_US or fr_CH
     func doubleValueForLocaleIdentifier(identifier: NSString) -> Double
-        
     {
         return self.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:false)
     }
@@ -131,8 +130,8 @@ extension NSString {
     * Private variables for the current node and its pointer
     */
     
-    var pointer : xmlNodePtr?
-    var node : xmlNode?
+    var pointer : xmlNodePtr!
+    var node : xmlNode!
     
     // MARK: - init methods
     
@@ -141,10 +140,12 @@ extension NSString {
     * \returns An initizlized HTMLNode object or nil if the object couldn't be created
     */
     
-    init(pointer: xmlNodePtr = nil) {
-        if pointer != nil {
-            self.pointer = pointer
-            self.node = pointer.memory
+    init?(pointer: xmlNodePtr? = nil) {
+        if pointer != nil && pointer?.hashValue != 0 {
+            self.pointer = pointer!
+            self.node = pointer!.memory
+        } else {
+            return nil
         }
     }
     
@@ -153,12 +154,9 @@ extension NSString {
     /*! The parent node
     * \returns The parent node or nil
     */
-
+    
     var parent : HTMLNode? {
-        if let parent = self.node?.parent {
-            return HTMLNode(pointer:parent)
-        }
-        return nil
+        return HTMLNode(pointer: node.parent)
     }
     
     /*! The next sibling node
@@ -166,10 +164,7 @@ extension NSString {
     */
     
     var nextSibling : HTMLNode? {
-        if let nextSibling = self.node?.next {
-            return HTMLNode(pointer:nextSibling)
-        }
-        return nil
+        return HTMLNode(pointer: node.next)
     }
     
     /*! The previous sibling node
@@ -177,10 +172,7 @@ extension NSString {
     */
     
     var previousSibling : HTMLNode? {
-        if let previousSibling = self.node?.prev {
-            return HTMLNode(pointer:previousSibling)
-        }
-        return nil
+        return HTMLNode(pointer: node.prev)
     }
     
     /*! The first child node
@@ -188,10 +180,7 @@ extension NSString {
     */
     
     var firstChild : HTMLNode? {
-        if let firstChild = self.node?.children {
-            return HTMLNode(pointer:firstChild)
-        }
-        return nil
+        return HTMLNode(pointer: node.children)
     }
     
     /*! The last child node
@@ -199,10 +188,7 @@ extension NSString {
     */
     
     var lastChild : HTMLNode? {
-        if let lastChild = self.node?.last {
-            return HTMLNode(pointer:lastChild)
-        }
-        return nil
+        return HTMLNode(pointer: node.last)
     }
     
     /*! The first level of children
@@ -214,15 +200,14 @@ extension NSString {
     
     var children : Array<HTMLNode> {
         var array = [HTMLNode]()
-        if let node = self.node {
-            for var currentNode = node.children; currentNode != nil && xmlNodeIsText(currentNode) == 0; currentNode = currentNode.memory.next {
-                let node = HTMLNode(pointer:currentNode)
+        for var currentNode = node.children; currentNode != nil && xmlNodeIsText(currentNode) == 0; currentNode = currentNode.memory.next {
+            if let node = HTMLNode(pointer: currentNode) {
                 array.append(node)
             }
         }
         return array
     }
-
+    
     /*! The child node at specified index
     * \param index The specified index
     * \returns The child node or nil if the index is invalid
@@ -233,14 +218,11 @@ extension NSString {
         let childrenArray = self.children
         return (index < countElements(childrenArray)) ? childrenArray[index] : nil
     }
-
+    
     /*! The number of children*/
     
     var childCount : UInt {
-        if let uPointer = self.pointer {
-            return xmlChildElementCount(uPointer)
-        }
-        return 0
+        return xmlChildElementCount(pointer)
     }
     
     // MARK: - attributes and values of current node (self)
@@ -252,13 +234,11 @@ extension NSString {
     
     func attributeForName(name : String) -> String?
     {
-        if let uPointer = self.pointer {
-            let attributeValue = xmlGetProp(uPointer, xmlCharFrom(name))
-            if attributeValue != nil {
-                let result = stringFrom(attributeValue)
-                free(attributeValue)
-                return result
-            }
+        let attributeValue = xmlGetProp(pointer, xmlCharFrom(name))
+        if attributeValue != nil {
+            let result = stringFrom(attributeValue)!
+            free(attributeValue)
+            return result
         }
         return nil
     }
@@ -268,18 +248,14 @@ extension NSString {
     */
     
     var attributes : Dictionary<String, String>? {
-        if let properties = self.node?.properties {
-            
-            var result = Dictionary<String, String>()
-            for var attr = properties; attr != nil ; attr = attr.memory.next {
-                let attrData = attr.memory
-                let value = stringFrom(attrData.children.memory.content)
-                let key = stringFrom(attrData.name)!
-                result[key] = value!
-            }
-            return result
+        var result = Dictionary<String, String>()
+        for var attr = node.properties; attr != nil ; attr = attr.memory.next {
+            let attrData = attr.memory
+            let value = stringFrom(attrData.children.memory.content)
+            let key = stringFrom(attrData.name)!
+            result[key] = value!
         }
-        return nil
+        return (result.count > 0) ? result : nil
     }
     
     /*! The tag name
@@ -287,10 +263,7 @@ extension NSString {
     */
     
     var tagName : String? {
-        if let node = self.node {
-            return stringFrom(node.name)
-        }
-        return nil
+        return stringFrom(node.name)
     }
     
     /*! The value for the class attribute*/
@@ -313,17 +286,17 @@ extension NSString {
     
     /*! The integer value*/
     
-    var integerValue : Int {
-        if let intValue = self.stringValue?.toInt() {
-            return intValue
-        }
-        return 0
+    var integerValue : Int? {
+        return self.stringValue?.toInt()
     }
     
     /*! The double value*/
     
-    var doubleValue : Double {
-        return Double(self.integerValue)
+    var doubleValue : Double? {
+        if let integer = self.integerValue {
+            return Double(integer)
+        }
+        return nil
     }
     
     /*! Returns the double value of the string value for a specified locale identifier
@@ -331,12 +304,9 @@ extension NSString {
     * \returns The double value of the string value depending on the parameter
     */
     
-    func doubleValueForLocaleIdentifier(identifier : String) -> Double
+    func doubleValueForLocaleIdentifier(identifier : String) -> Double?
     {
-        if let string = self.stringValue {
-            return string.doubleValueForLocaleIdentifier(identifier)
-        }
-        return 0.0
+        return self.stringValue?.doubleValueForLocaleIdentifier(identifier)
     }
     
     /*! Returns the double value of the string value for a specified locale identifier considering a plus sign prefix
@@ -345,12 +315,9 @@ extension NSString {
     * \returns The double value of the string value depending on the parameters
     */
     
-    func doubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag : Bool) -> Double
+    func doubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag : Bool) -> Double?
     {
-        if let string = self.stringValue {
-            return string.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
-        }
-        return 0.0
+        return self.stringValue?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
     }
     
     /*! Returns the double value of the text content for a specified locale identifier
@@ -358,12 +325,9 @@ extension NSString {
     * \returns The double value of the text content depending on the parameter
     */
     
-    func contentDoubleValueForLocaleIdentifier(identifier : String) -> Double
+    func contentDoubleValueForLocaleIdentifier(identifier : String) -> Double?
     {
-        if let content = self.textContent {
-            return content.doubleValueForLocaleIdentifier(identifier)
-        }
-        return 0.0
+        return self.textContent?.doubleValueForLocaleIdentifier(identifier)
     }
     
     /*! Returns the double value of the text content for a specified locale identifier considering a plus sign prefix
@@ -372,12 +336,9 @@ extension NSString {
     * \returns The double value of the text content depending on the parameters
     */
     
-    func contentDoubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag: Bool) -> Double
+    func contentDoubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag: Bool) -> Double?
     {
-        if let content = self.textContent {
-            return content.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
-        }
-        return 0.0
+        return self.textContent?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
     }
     
     /*! Returns the date value of the string value for a specified date format and time zone
@@ -429,12 +390,7 @@ extension NSString {
     */
     
     var rawStringValue : String? {
-        if let node = self.node {
-            if node.children != nil {
-                return stringFrom(node.children.memory.content)
-            }
-        }
-        return nil
+        return stringFrom(node.children.memory.content)
     }
     
     /*! The string value of a node trimmed by whitespace and newline characters
@@ -449,9 +405,8 @@ extension NSString {
     * \returns The trimmed and collapsed string value or an empty string
     */
     
-    var stringValueCollapsingWhitespace : String?
-        {
-            return self.stringValue?.collapseWhitespaceAndNewLine()
+    var stringValueCollapsingWhitespace : String? {
+        return self.stringValue?.collapseWhitespaceAndNewLine()
     }
     
     /*! The raw html text dump
@@ -461,17 +416,14 @@ extension NSString {
     var HTMLString : String? {
         var result : String?
         
-        if self.node != nil {
-            var buffer : xmlBufferPtr = xmlBufferCreate()
-            if buffer != nil {
-                let err : Int32 = xmlNodeDump(buffer, nil, self.pointer!, 0, 0)
-                if err > -1 {
-                    result = stringFrom(buffer.memory.content)!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-                }
-                xmlBufferFree(buffer)
+        var buffer : xmlBufferPtr = xmlBufferCreate()
+        if buffer != nil {
+            let err : Int32 = xmlNodeDump(buffer, nil, pointer, 0, 0)
+            if err > -1 {
+                result = stringFrom(buffer.memory.content)!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
             }
+            xmlBufferFree(buffer)
         }
-        
         return result
     }
     
@@ -499,34 +451,32 @@ extension NSString {
     /*! The element type of the node*/
     
     var elementType : String? {
-        if let node = self.node {
-            let rawType = xmlElementTypeToInt(node.type)
-            if let nodeType = XMLElementType(rawValue:rawType) {
+        let rawType = xmlElementTypeToInt(node.type)
+        if let nodeType = XMLElementType(rawValue:rawType) {
+            
+            switch nodeType {
                 
-                switch nodeType {
-                    
-                case .ELEMENT_NODE: return "Element"
-                case .ATTRIBUTE_NODE: return "Attribute"
-                case .TEXT_NODE: return "Text"
-                case .CDATA_SECTION_NODE: return "CData Section"
-                case .ENTITY_REF_NODE: return "Entity Ref"
-                case .ENTITY_NODE: return "Entity"
-                case .PI_NODE: return "Pi"
-                case .COMMENT_NODE: return "Comment"
-                case .DOCUMENT_NODE: return "Document"
-                case .DOCUMENT_TYPE_NODE: return "Document Type"
-                case .DOCUMENT_FRAG_NODE: return "Document Frag"
-                case .NOTATION_NODE: return "Notation"
-                case .HTML_DOCUMENT_NODE: return "HTML Document"
-                case .DTD_NODE: return "DTD"
-                case .ELEMENT_DECL: return "Element Declaration"
-                case .ATTRIBUTE_DECL: return "Attribute Declaration"
-                case .ENTITY_DECL: return "Entity Declaration"
-                case .NAMESPACE_DECL: return "Namespace Declaration"
-                case .XINCLUDE_START: return "Xinclude Start"
-                case .XINCLUDE_END: return "Xinclude End"
-                case .DOCB_DOCUMENT_NODE: return "DOCD Document"
-                }
+            case .ELEMENT_NODE: return "Element"
+            case .ATTRIBUTE_NODE: return "Attribute"
+            case .TEXT_NODE: return "Text"
+            case .CDATA_SECTION_NODE: return "CData Section"
+            case .ENTITY_REF_NODE: return "Entity Ref"
+            case .ENTITY_NODE: return "Entity"
+            case .PI_NODE: return "Pi"
+            case .COMMENT_NODE: return "Comment"
+            case .DOCUMENT_NODE: return "Document"
+            case .DOCUMENT_TYPE_NODE: return "Document Type"
+            case .DOCUMENT_FRAG_NODE: return "Document Frag"
+            case .NOTATION_NODE: return "Notation"
+            case .HTML_DOCUMENT_NODE: return "HTML Document"
+            case .DTD_NODE: return "DTD"
+            case .ELEMENT_DECL: return "Element Declaration"
+            case .ATTRIBUTE_DECL: return "Attribute Declaration"
+            case .ENTITY_DECL: return "Entity Declaration"
+            case .NAMESPACE_DECL: return "Namespace Declaration"
+            case .XINCLUDE_START: return "Xinclude Start"
+            case .XINCLUDE_END: return "Xinclude End"
+            case .DOCB_DOCUMENT_NODE: return "DOCD Document"
             }
         }
         return nil
@@ -537,10 +487,7 @@ extension NSString {
     */
     
     var isAttributeNode : Bool? {
-        if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.rawValue
-        }
-        return nil
+        return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.rawValue
     }
     
     /*! Is the node a document node
@@ -548,10 +495,7 @@ extension NSString {
     */
     
     var isDocumentNode : Bool? {
-        if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.rawValue
-        }
-        return nil
+        return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.rawValue
     }
     
     /*! Is the node an element node
@@ -559,10 +503,7 @@ extension NSString {
     */
     
     var isElementNode : Bool? {
-        if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.rawValue
-        }
-        return nil
+        return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.rawValue
     }
     
     /*! Is the node a text node
@@ -570,37 +511,32 @@ extension NSString {
     */
     
     var isTextNode : Bool? {
-        if let node = self.node {
-            return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.rawValue        }
-        return nil
+        return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.rawValue
     }
     
     /*! The array of all text content of children
     * \returns The text content array - each array item is trimmed by whitespace and newline characters - or an empty array
     */
-
+    
     var textContentOfChildren : Array<String> {
         var array = Array<String>()
-        if let node = self.node {
-            textContentOfChildren(node.children, array:&array, recursive:false)
-        }
+        textContentOfChildren(node.children, array:&array, recursive:false)
         return array
     }
     
     
     // MARK: - attributes and values of current node and its descendants (descendant-or-self)
     
-    private func textContent(nodePtr : xmlNodePtr?) -> String?
+    private func textContent(nodePtr : xmlNodePtr) -> String?
     {
-        if let pointer = nodePtr{
-            let contents = xmlNodeGetContent(pointer)
-            
-            if contents != nil {
-                let string = String.fromCString(UnsafePointer<CChar>(contents))
-                free(contents)
-                return string!
-            }
+        let contents = xmlNodeGetContent(nodePtr)
+        
+        if contents != nil {
+            let string = String.fromCString(UnsafePointer<CChar>(contents))
+            free(contents)
+            return string!
         }
+        
         return nil
     }
     
@@ -609,15 +545,15 @@ extension NSString {
     */
     
     var rawTextContent : String? {
-        return textContent(self.pointer)
+        return textContent(pointer)
     }
     
     /*! The text content of descendant-or-self trimmed by whitespace and newline characters
     * \returns The trimmed text content of the node and all its descendants or an empty string
     */
-
+    
     var textContent : String? {
-        return textContent(self.pointer)?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return textContent(pointer)?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
     }
     
     /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
@@ -634,40 +570,35 @@ extension NSString {
     
     var textContentOfDescendants : Array<String> {
         var array = Array<String>()
-        if let node = self.node {
-            textContentOfChildren(node.children, array:&array, recursive:true)
-        }
+        textContentOfChildren(node.children, array:&array, recursive:true)
         return array
     }
-
+    
     /*! The raw html text dump of descendant-or-self
     * \returns The raw html text dump of the node and all its descendants or an empty string
     */
     
-    var HTMLContent : String?
-        {
-            var result : String?
-            if let node = self.node {
-                var xmlBuffer = xmlBufferCreateSize(DUMP_BUFFER_SIZE)
-                var outputBuffer : xmlOutputBufferPtr = xmlOutputBufferCreateBuffer(xmlBuffer, nil)
-                
-                let document = node.doc
-                let xmlCharContent = document.memory.encoding
-                let contentAddress = unsafeBitCast(xmlCharContent, UnsafePointer<xmlChar>.self)
-                let constChar = UnsafePointer<Int8>(contentAddress)
-                
-                htmlNodeDumpOutput(outputBuffer, document, self.pointer!, constChar)
-                xmlOutputBufferFlush(outputBuffer)
-                
-                if xmlBuffer.memory.content != nil {
-                    result = stringFrom(xmlBuffer.memory.content)
-                }
-                
-                xmlOutputBufferClose(outputBuffer)
-                xmlBufferFree(xmlBuffer)
-            }
-            
-            return result
+    var HTMLContent : String?  {
+        var result : String?
+        var xmlBuffer = xmlBufferCreateSize(DUMP_BUFFER_SIZE)
+        var outputBuffer : xmlOutputBufferPtr = xmlOutputBufferCreateBuffer(xmlBuffer, nil)
+        
+        let document = node.doc
+        let xmlCharContent = document.memory.encoding
+        let contentAddress = unsafeBitCast(xmlCharContent, UnsafePointer<xmlChar>.self)
+        let constChar = UnsafePointer<Int8>(contentAddress)
+        
+        htmlNodeDumpOutput(outputBuffer, document, self.pointer!, constChar)
+        xmlOutputBufferFlush(outputBuffer)
+        
+        if xmlBuffer.memory.content != nil {
+            result = stringFrom(xmlBuffer.memory.content)
+        }
+        
+        xmlOutputBufferClose(outputBuffer)
+        xmlBufferFree(xmlBuffer)
+        
+        return result
     }
     
     
@@ -678,7 +609,7 @@ extension NSString {
     private func childWithAttribute(attrName : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
@@ -690,7 +621,6 @@ extension NSString {
                 }
             }
         }
-        
         return nil
     }
     
@@ -698,10 +628,10 @@ extension NSString {
     {
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let child = attr.memory.children
-                    if child != nil && xmlStrEqual(child.memory.content, attrValue) == 1 {
+                    
+                    if xmlStrEqual(attr.memory.children.memory.content, attrValue) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
@@ -713,7 +643,6 @@ extension NSString {
                 }
             }
         }
-        
         return nil
     }
     
@@ -721,10 +650,10 @@ extension NSString {
     {
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let child = attr.memory.children
-                    if child != nil && xmlStrstr(child.memory.content, attrValue) != nil {
+                    
+                    if xmlStrstr(attr.memory.children.memory.content, attrValue) != nil {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
@@ -739,17 +668,67 @@ extension NSString {
         return nil
     }
     
+    private func childWithAttributeValueBeginsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+                    
+                    let subString = xmlStrsub(attr.memory.children.memory.content, 0, xmlStrlen(attrValue))
+                    if xmlStrEqual(subString, attrValue) == 1 {
+                        return HTMLNode(pointer: currentNodePtr)
+                    }
+                }
+            }
+            
+            if (recursive) {
+                if let subNode = childWithAttributeValueBeginsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
+                    return subNode
+                }
+            }
+        }
+        return nil
+    }
+    
+    private func childWithAttributeValueEndsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    {
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+                    
+                    let attrContent = attr.memory.children.memory.content
+                    let addValueLength = xmlStrlen(attrValue)
+                    let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
+                    if xmlStrEqual(subString, attrValue) == 1 {
+                        return HTMLNode(pointer: currentNodePtr)
+                    }
+                }
+            }
+            
+            if (recursive) {
+                if let subNode = childWithAttributeValueEndsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
+                    return subNode
+                }
+            }
+        }
+        return nil
+    }
+    
+    
     private func childrenWithAttribute(attrName : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
     {
         if attrName == nil { return }
         
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
-            for var attr : xmlAttrPtr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr)
-                    array.append(matchingNode)
-                    break
+                    if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                        array.append(matchingNode)
+                        break
+                    }
                 }
             }
             
@@ -760,19 +739,18 @@ extension NSString {
     }
     
     private func childrenWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
-        
     {
         if attrName == nil { return }
         
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
             for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let child = attr.memory.children
-                    if child != nil && xmlStrEqual(child.memory.content, attrValue) == 1 {
-                        let matchingNode = HTMLNode(pointer: currentNodePtr)
-                        array.append(matchingNode)
-                        break
+                    
+                    if xmlStrEqual(attr.memory.children.memory.content, attrValue) == 1 {
+                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                            array.append(matchingNode)
+                            break
+                        }
                     }
                 }
             }
@@ -784,7 +762,6 @@ extension NSString {
     }
     
     private func childrenWithAttributeValueContains(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
-        
     {
         if attrName == nil { return }
         
@@ -792,11 +769,12 @@ extension NSString {
             
             for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    let child = attr.memory.children
-                    if child != nil && xmlStrstr(child.memory.content, attrValue) != nil {
-                        let matchingNode = HTMLNode(pointer: currentNodePtr)
-                        array.append(matchingNode)
-                        break
+                    
+                    if xmlStrstr(attr.memory.children.memory.content, attrValue) != nil {
+                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                            array.append(matchingNode)
+                            break
+                        }
                     }
                 }
             }
@@ -804,9 +782,61 @@ extension NSString {
             if (recursive)  {
                 childrenWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
-            
         }
     }
+    
+    private func childrenWithAttributeValueBeginsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    {
+        if attrName == nil { return }
+        
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+                    
+                    let subString = xmlStrsub(attr.memory.children.memory.content, 0, xmlStrlen(attrValue))
+                    if xmlStrEqual(subString, attrValue) == 1 {
+                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                            array.append(matchingNode)
+                            break
+                        }
+                    }
+                }
+            }
+            
+            if (recursive)  {
+                childrenWithAttributeValueBeginsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            }
+        }
+    }
+    
+    private func childrenWithAttributeValueEndsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    {
+        if attrName == nil { return }
+        
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            
+            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
+                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+                    
+                    let attrContent = attr.memory.children.memory.content
+                    let addValueLength = xmlStrlen(attrValue)
+                    let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
+                    if xmlStrEqual(subString, attrValue) == 1 {
+                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                            array.append(matchingNode)
+                            break
+                        }
+                    }
+                }
+            }
+            
+            if (recursive)  {
+                childrenWithAttributeValueEndsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            }
+        }
+    }
+    
     
     /*! Returns the first descendant node with the specifed attribute name and value matching exactly
     * \param attributeName The name of the attribute
@@ -816,10 +846,7 @@ extension NSString {
     
     func descendantWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
     /*! Returns the first child node with the specifed attribute name and value matching exactly
@@ -830,10 +857,7 @@ extension NSString {
     
     func childWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
         
     }
     
@@ -845,10 +869,7 @@ extension NSString {
     
     func siblingWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
     /*! Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value
@@ -859,10 +880,7 @@ extension NSString {
     
     func descendantWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
-        }
-        return nil
+        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
     /*! Returns the first child node with the specifed attribute name and the value contains the specified attribute value
@@ -873,10 +891,7 @@ extension NSString {
     
     func childWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
-        }
-        return nil
+        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
     }
     
     /*! Returns the first sibling node with the specifed attribute name and the value contains the specified attribute value
@@ -887,11 +902,75 @@ extension NSString {
     
     func siblingWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
-        }
-        return nil
-        
+        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+    }
+    
+    /*! Returns the first descendant node with the specifed attribute name and value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The value of the attribute
+    * \returns The first found descendant node or nil if no node matches the parameters
+    */
+    
+    
+    func descendantWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+    }
+    
+    /*! Returns the first child node with the specifed attribute name and value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The value of the attribute
+    * \returns The first found child node or nil if no node matches the parameters
+    */
+    
+    func childWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
+    }
+    
+    /*! Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The first found sibling node or nil if no node matches the parameters
+    */
+    
+    func siblingWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+    }
+    
+    /*! Returns the first descendant node with the specifed attribute name and value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The value of the attribute
+    * \returns The first found descendant node or nil if no node matches the parameters
+    */
+    
+    
+    func descendantWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+    }
+    
+    /*! Returns the first child node with the specifed attribute name and value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The value of the attribute
+    * \returns The first found child node or nil if no node matches the parameters
+    */
+    
+    func childWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
+    }
+    
+    /*! Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The first found sibling node or nil if no node matches the parameters
+    */
+    
+    func siblingWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    {
+        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
     /*! Returns all descendant nodes with the specifed attribute name and value matching exactly
@@ -903,9 +982,7 @@ extension NSString {
     func descendantsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
-        }
+        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
         return array
     }
     
@@ -918,9 +995,7 @@ extension NSString {
     func childrenWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
-        }
+        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
         return array
     }
     
@@ -933,9 +1008,7 @@ extension NSString {
     func siblingsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
-        }
+        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
         return array
     }
     
@@ -948,9 +1021,7 @@ extension NSString {
     func descendantsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
-        }
+        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
         return array
     }
     
@@ -963,9 +1034,7 @@ extension NSString {
     func childrenWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
-        }
+        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
         return array
     }
     
@@ -978,9 +1047,86 @@ extension NSString {
     func siblingsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
-        }
+        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        return array
+    }
+    
+    /*! Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found descendant nodes or an empty array
+    */
+    
+    func descendantsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        return array
+    }
+    
+    /*! Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found child nodes or an empty array
+    */
+    
+    func childrenWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        return array
+    }
+    
+    /*! Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found sibling nodes or an empty array
+    */
+    
+    func siblingsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        return array
+    }
+    
+    /*! Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found descendant nodes or an empty array
+    */
+    
+    func descendantsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        return array
+    }
+    
+    /*! Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found child nodes or an empty array
+    */
+    
+    func childrenWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        return array
+    }
+    
+    /*! Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value
+    * \param attributeName The name of the attribute
+    * \param attributeValue The partial string of the attribute value
+    * \returns The array of all found sibling nodes or an empty array
+    */
+    
+    func siblingsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    {
+        var array = Array<HTMLNode>()
+        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
         return array
     }
     
@@ -991,10 +1137,7 @@ extension NSString {
     
     func descendantWithAttribute(attributeName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: true)
-        }
-        return nil
+        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: true)
     }
     
     /*! Returns the first child node with the specifed attribute name
@@ -1004,10 +1147,7 @@ extension NSString {
     
     func childWithAttribute(attributeName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: false)
-        }
-        return nil
+        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: false)
     }
     
     /*! Returns the first sibling node with the specifed attribute name
@@ -1017,10 +1157,7 @@ extension NSString {
     
     func siblingWithAttribute(attributeName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, recursive: false)
-        }
-        return nil
+        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, recursive: false)
     }
     
     /*! Returns all descendant nodes with the specifed attribute name
@@ -1031,9 +1168,7 @@ extension NSString {
     func descendantsWithAttribute(attributeName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: true)
-        }
+        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: true)
         return array
     }
     
@@ -1045,9 +1180,7 @@ extension NSString {
     func childrenWithAttribute(attributeName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: false)
-        }
+        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: false)
         return array
     }
     
@@ -1059,9 +1192,7 @@ extension NSString {
     func siblingsWithAttribute(attributeName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, array:&array, recursive: false)
-        }
+        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, array:&array, recursive: false)
         return array
     }
     
@@ -1072,10 +1203,7 @@ extension NSString {
     
     func descendantWithClass(classValue : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: true)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: true)
     }
     
     /*! Returns the first child node with the specifed class name
@@ -1085,10 +1213,7 @@ extension NSString {
     
     func childWithClass(classValue : NSString) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: false)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: false)
     }
     
     /*! Returns the first sibling node with the specifed class name
@@ -1098,10 +1223,7 @@ extension NSString {
     
     func siblingWithClass(classValue : NSString) -> HTMLNode?
     {
-        if let node = self.node {
-            return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.next, recursive: false)
-        }
-        return nil
+        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.next, recursive: false)
     }
     
     /*! Returns all descendant nodes with the specifed class name
@@ -1183,10 +1305,7 @@ extension NSString {
     
     func descendantOfTag(tagName : String, valueMatches: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches),  nodePtr:node.children, recursive:true)
-        }
-        return nil
+        return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches),  nodePtr:node.children, recursive:true)
     }
     
     /*! Returns the first child node with the specifed tag name and string value matching exactly
@@ -1197,10 +1316,7 @@ extension NSString {
     
     func childOfTag(tagName : String, valueMatches: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, recursive:false)
-        }
-        return nil
+        return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, recursive:false)
     }
     
     /*! Returns the first sibling node with the specifed tag name and string value matching exactly
@@ -1225,10 +1341,7 @@ extension NSString {
     
     func descendantOfTag(tagName : String, valueContains: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:true)
-        }
-        return nil
+        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:true)
     }
     
     /*! Returns the child node with the specifed attribute name and the string value contains the specified value
@@ -1239,10 +1352,7 @@ extension NSString {
     
     func childOfTag(tagName : String, valueContains: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:false)
-        }
-        return nil
+        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:false)
     }
     
     /*! Returns the sibling node with the specifed attribute name and the string value contains the specified value
@@ -1253,49 +1363,43 @@ extension NSString {
     
     func siblingOfTag(tagName : String, valueContains: String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.next, recursive:false)
-        }
-        return nil
+        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.next, recursive:false)
     }
     
-
-    private func childrenOfTagValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    
+    private func childrenOfTagStringValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    {
+        if tagName == nil { return }
+        
+        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
+            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
+                if xmlStrEqual(currentNodePtr.memory.children.memory.content, value) == 1 {
+                    if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                        array.append(matchingNode)
+                    }
+                }
+            }
+            if (recursive) {
+                childrenOfTagStringValueMatches(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
+            }
+        }
+    }
+    
+    private func childrenOfTagStringValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
     {
         if tagName == nil { return }
         
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
                 
-                let childNodePtr = currentNodePtr.memory.children
-                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
-                if childContent != nil && xmlStrEqual(childContent, value) == 1 {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr)
-                    array.append(matchingNode)
+                if xmlStrstr(currentNodePtr.memory.children.memory.content, value) != nil {
+                    if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                        array.append(matchingNode)
+                    }
                 }
             }
             if (recursive) {
-                childrenOfTagValueMatches(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
-            }
-        }
-    }
-    
-    private func childrenOfTagValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
-    {
-        if tagName == nil { return }
-
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
-                
-                let childNodePtr = currentNodePtr.memory.children
-                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
-                if childContent != nil && xmlStrstr(childContent, value) != nil {
-                    let matchingNode = HTMLNode(pointer: currentNodePtr)
-                    array.append(matchingNode)
-                }
-            }
-            if (recursive) {
-                childrenOfTagValueContains(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
+                childrenOfTagStringValueContains(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
             }
         }
     }
@@ -1309,9 +1413,7 @@ extension NSString {
     func descendantsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:true)
-        }
+        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:true)
         return array
     }
     
@@ -1324,9 +1426,7 @@ extension NSString {
     func childrenOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:false)
-        }
+        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:false)
         return array
     }
     
@@ -1339,9 +1439,7 @@ extension NSString {
     func siblingsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.next, array:&array, recursive:false)
-        }
+        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.next, array:&array, recursive:false)
         return array
     }
     
@@ -1354,9 +1452,7 @@ extension NSString {
     func descendantsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:true)
-        }
+        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:true)
         return array
     }
     
@@ -1369,9 +1465,7 @@ extension NSString {
     func childrenOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:false)
-        }
+        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:false)
         return array
     }
     
@@ -1384,9 +1478,7 @@ extension NSString {
     func siblingsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.next, array:&array, recursive:false)
-        }
+        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.next, array:&array, recursive:false)
         return array
     }
     
@@ -1420,10 +1512,7 @@ extension NSString {
     
     func descendantOfTag(tagName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:true)
-        }
-        return nil
+        return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:true)
     }
     
     /*! Returns the first child node with the specifed tag name
@@ -1433,10 +1522,7 @@ extension NSString {
     
     func childOfTag(tagName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:false)
-        }
-        return nil
+        return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:false)
     }
     
     /*! Returns the first sibling node with the specifed tag name
@@ -1446,10 +1532,7 @@ extension NSString {
     
     func siblingOfTag(tagName : String) -> HTMLNode?
     {
-        if let node = self.node {
-            return childOfTag(xmlCharFrom(tagName), nodePtr:node.next, recursive:false)
-        }
-        return nil
+        return childOfTag(xmlCharFrom(tagName), nodePtr:node.next, recursive:false)
     }
     
     
@@ -1462,8 +1545,9 @@ extension NSString {
         for currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             let currentNode = currentNodePtr.memory
             if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tagName) == 1 {
-                let matchingNode = HTMLNode(pointer: currentNodePtr)
-                array.append(matchingNode)
+                if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                    array.append(matchingNode)
+                }
             }
             
             if recursive {
@@ -1480,9 +1564,7 @@ extension NSString {
     func descendantsOfTag(tagName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:true)
-        }
+        childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:true)
         return array
     }
     
@@ -1494,9 +1576,7 @@ extension NSString {
     func childrenOfTag(tagName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:false)
-        }
+        childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:false)
         return array
     }
     
@@ -1508,9 +1588,7 @@ extension NSString {
     func siiblingsOfTag(tagName : String) -> Array<HTMLNode>
     {
         var array = Array<HTMLNode>()
-        if let node = self.node {
-            childrenOfTag(xmlCharFrom(tagName),  nodePtr:node.next, array:&array, recursive:false)
-        }
+        childrenOfTag(xmlCharFrom(tagName),  nodePtr:node.next, array:&array, recursive:false)
         return array
     }
     
@@ -1518,7 +1596,6 @@ extension NSString {
     
     // includes type, name , number of children, attributes and the raw content
     var description : String {
-        if self.node == nil { return "" }
         var attrs : AnyObject!
         if attributes != nil {
             attrs = attributes!
@@ -1531,28 +1608,29 @@ extension NSString {
     // creates a String from a xmlChar
     
     func stringFrom(xmlchar: UnsafePointer<xmlChar>) -> String? {
-        return String.fromCString(UnsafePointer<CChar>(xmlchar))
+        let cString = UnsafePointer<CChar>(xmlchar)
+        return String.fromCString(cString)
     }
     
     // creates a xmlChar from a String
     
     func xmlCharFrom(string: String) -> UnsafePointer<xmlChar> {
-        let cString = string.cStringUsingEncoding(NSUTF8StringEncoding)!
-        return UnsafePointer<xmlChar>(cString)
+        let cData = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+        return UnsafePointer<xmlChar>(cData!.bytes)
     }
     
     // sequence generator to be able to write "for item in HTMLNode" as a shortcut for "for item in HTMLNode.children"
     
     func generate() -> GeneratorOf<HTMLNode> {
-        var node = self.pointer?.memory.children
+        var node = pointer.memory.children
         return GeneratorOf<HTMLNode> {
-            if xmlNodeIsText(node!) == 1 {
-                node = node!.memory.next
-                if node!.hashValue == 0 { return .None }
+            if xmlNodeIsText(node) == 1 {
+                node = node.memory.next
+                if node.hashValue == 0 { return .None }
             }
-            let nextNode = HTMLNode(pointer:node!)
-            node = node!.memory.next
-            if node!.hashValue == 0 {
+            let nextNode = HTMLNode(pointer:node)
+            node = node.memory.next
+            if node.hashValue == 0 {
                 return .None
             } else {
                 return nextNode
@@ -1560,24 +1638,24 @@ extension NSString {
         }
         
     }
-
+    
     // alternative sequence generator to consider all text nodes
     // see also the 'children' property
-
-
-//    func generate() -> GeneratorOf<HTMLNode> {
-//        var node = self.pointer?.memory.children
-//        return GeneratorOf<HTMLNode> {
-//            if node!.hashValue != 0 {
-//                let nextNode = HTMLNode(pointer:node!)
-//                node = node!.memory.next
-//                return nextNode
-//            } else {
-//                return .None
-//            }
-//        }
-//        
-//    }
+    
+    
+    //    func generate() -> GeneratorOf<HTMLNode> {
+    //        var node = self.pointer?.memory.children
+    //        return GeneratorOf<HTMLNode> {
+    //            if node!.hashValue != 0 {
+    //                let nextNode = HTMLNode(pointer:node!)
+    //                node = node!.memory.next
+    //                return nextNode
+    //            } else {
+    //                return .None
+    //            }
+    //        }
+    //
+    //    }
     
 }
 

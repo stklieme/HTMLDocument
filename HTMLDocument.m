@@ -1,20 +1,20 @@
 /*###################################################################################
- #																					#
- #    HTMLDocument.m																#
- #																					#
- #    Copyright © 2011-2013 by Stefan Klieme                                        #
- #																					#
- #	  Objective-C wrapper for HTML parser of libxml2								#
- #																					#
- #	  Version 1.6 - 29. Sep 2013                                                    #
- #																					#
- #    usage:     add libxml2.dylib to frameworks                                    #
- #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
- #               add -lxml2 to target -> other linker flags                         #
  #                                                                                  #
- #																					#
+ #     HTMLDocument.m                                                               #
+ #                                                                                  #
+ #     Copyright © 2014 by Stefan Klieme                                            #
+ #                                                                                  #
+ #     Objective-C wrapper for HTML parser of libxml2                               #
+ #                                                                                  #
+ #     Version 1.7 - 20. Sep 2014                                                   #
+ #                                                                                  #
+ #     usage:     add libxml2.dylib to frameworks                                   #
+ #                add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths #
+ #                add -lxml2 to target -> other linker flags                        #
+ #                                                                                  #
+ #                                                                                  #
  ####################################################################################
- #																					#
+ #                                                                                  #
  # Permission is hereby granted, free of charge, to any person obtaining a copy of  #
  # this software and associated documentation files (the "Software"), to deal       #
  # in the Software without restriction, including without limitation the rights     #
@@ -28,9 +28,9 @@
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
  # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
- # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
- #																					#
- ###################################################################################*/
+ # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.    #
+ #                                                                                  #
+ ##################################################################################*/
 
 #import "HTMLDocument.h"
 
@@ -154,6 +154,7 @@ const char * convertStringEncoding(NSStringEncoding encoding, char * buffer, siz
 
 - (INSTANCETYPE_OR_ID)initWithContentsOfURL:(NSURL *)url encoding:(NSStringEncoding )encoding error:(NSError **)error
 {
+    
     NSData *data = [NSData dataWithContentsOfURL:url options:0 error:error];
     if (data && *error == nil) {
         return [self initWithData:data encoding:encoding error:error];

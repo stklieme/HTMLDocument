@@ -6,7 +6,7 @@
 #                                                                                   #
 #    Swift wrapper for HTML parser of libxml2                                       #
 #                                                                                   #
-#    Version 1.0 - 15. Sep 2014                                                     #
+#    Version 0.9 - 20. Sep 2014                                                     #
 #                                                                                   #
 #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
 #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
@@ -82,7 +82,7 @@ class HTMLDocument : NSObject {
     */
     
     // designated initializer
-    init(data: NSData?, encoding: NSStringEncoding, error: NSErrorPointer)
+    init?(data: NSData?, encoding: NSStringEncoding, error: NSErrorPointer)
     {
         super.init()
         var errorCode = 0
@@ -109,8 +109,9 @@ class HTMLDocument : NSObject {
                 errorCode = 1
             }
         }
-        if errorCode != 0 && error != nil {
-            error.memory = errorForCode(errorCode)
+        if errorCode != 0 {
+            if error != nil { error.memory = errorForCode(errorCode) }
+            return nil
         }
        
     }
@@ -121,7 +122,7 @@ class HTMLDocument : NSObject {
     * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
     */
     
-    convenience init(data: NSData?, inout error: NSError?)
+    convenience init?(data: NSData?, inout error: NSError?)
     {
         self.init(data:data, encoding:NSUTF8StringEncoding, error:&error)
     }
@@ -133,7 +134,7 @@ class HTMLDocument : NSObject {
     * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
     */
     
-    convenience init(contentsOfURL url:NSURL, encoding:NSStringEncoding, inout error:NSError?)
+    convenience init?(contentsOfURL url:NSURL, encoding:NSStringEncoding, inout error:NSError?)
     {
         let options = NSDataReadingOptions(rawValue: 0)
         let data = NSData(contentsOfURL:url, options:options, error:&error)
@@ -146,7 +147,7 @@ class HTMLDocument : NSObject {
     * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
     */
     
-    convenience init(contentsOfURL url: NSURL, inout error: NSError?)
+    convenience init?(contentsOfURL url: NSURL, inout error: NSError?)
     {
         self.init(contentsOfURL:url, encoding:NSUTF8StringEncoding, error:&error)
     }
@@ -158,7 +159,7 @@ class HTMLDocument : NSObject {
     * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
     */
     
-    convenience init(HTMLString string: String, encoding:NSStringEncoding, inout error:NSError?)
+    convenience init?(HTMLString string: String, encoding:NSStringEncoding, inout error:NSError?)
     {
         self.init(data:string.dataUsingEncoding(encoding), encoding:encoding, error:&error)
     }
@@ -170,7 +171,7 @@ class HTMLDocument : NSObject {
     * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
     */
     
-    convenience init(HTMLString string: String, inout error:NSError?)
+    convenience init?(HTMLString string: String, inout error:NSError?)
     {
         self.init(HTMLString:string, encoding:NSUTF8StringEncoding, error:&error)
     }

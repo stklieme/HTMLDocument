@@ -1,20 +1,20 @@
 /*###################################################################################
- #																					#
- #    HTMLDocument.h																#
- #																					#
- #   Copyright © 2011-2013 by Stefan Klieme                                         #
- #																					#
- #	  Objective-C wrapper for HTML parser of libxml2								#
- #																					#
- #	  Version 1.6 - 29. Sep 2013                                                    #
- #																					#
- #    usage:     add libxml2.dylib to frameworks                                    #
- #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths  #
- #               add -lxml2 to target -> other linker flags                         #
  #                                                                                  #
- #																					#
+ #     HTMLDocument.h                                                               #
+ #                                                                                  #
+ #     Copyright © 2014 by Stefan Klieme                                            #
+ #                                                                                  #
+ #     Objective-C wrapper for HTML parser of libxml2                               #
+ #                                                                                  #
+ #     Version 1.7 - 20. Sep 2014                                                   #
+ #                                                                                  #
+ #     usage:     add libxml2.dylib to frameworks                                   #
+ #                add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths #
+ #                add -lxml2 to target -> other linker flags                        #
+ #                                                                                  #
+ #                                                                                  #
  ####################################################################################
- #																					#
+ #                                                                                  #
  # Permission is hereby granted, free of charge, to any person obtaining a copy of  #
  # this software and associated documentation files (the "Software"), to deal       #
  # in the Software without restriction, including without limitation the rights     #
@@ -26,11 +26,11 @@
  # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR       #
  # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,         #
  # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE      #
- # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,# 
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,#
  # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR     #
- # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.	#
- #																					#
- ###################################################################################*/
+ # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.    #
+ #                                                                                  #
+ ##################################################################################*/
 
 #import <Foundation/Foundation.h>
 #import <libxml/HTMLparser.h>

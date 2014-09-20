@@ -6,7 +6,7 @@
 #                                                                                   #
 #    Swift wrapper for HTML parser of libxml2                                       #
 #                                                                                   #
-#    Version 1.0 - 15. Sep 2014                                                     #
+#    Version 0.9 - 20. Sep 2014                                                     #
 #                                                                                   #
 #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
 #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
@@ -41,11 +41,11 @@ extension HTMLNode  {
     // XPath format predicates
     
     struct XPathPredicate {
-        static var node: (String) -> String = { return "/descendant::\($0)" }
+        static var node: (String) -> String = { return "./descendant::\($0)" }
         static var nodeWithAttribute: (String, String) -> String = { return "//\($0)[@\($1)]" }
         static var attribute: (String) -> String = { return "//*[@\($0)]" }
         static var attributeIsEqual: (String, String) -> String = { return "//*[@\($0) ='\($1)']" }
-        static var attributeBeginsWith: (String, String) -> String = { return "//*[starts-with(@\($0),'\($1)')]" }
+        static var attributeBeginsWith: (String, String) -> String = { return "./*[starts-with(@\($0),'\($1)')]" }
         static var attributeEndsWith: (String, String) -> String = { return "//*['\($1)' = substring(@\($0)@, string-length(@\($0))- string-length('\($1)') +1)]" }
         static var attributeContains: (String, String) -> String = { return "//*[contains(@\($0),'\($1)')]" }
     }
@@ -66,8 +66,15 @@ extension HTMLNode  {
         let xpathContext = xmlXPathNewContext(xmlDoc)
         
         if xpathContext != nil {
-            let xpathObject = xmlXPathEvalExpression(xmlCharFrom(query), xpathContext)
+            var xpathObject : xmlXPathObjectPtr
             
+            println(query)
+            if (query.hasPrefix("//") || query.hasPrefix("./")) {
+                xpathObject = xmlXPathNodeEval(node, xmlCharFrom(query), xpathContext)
+            } else {
+                xpathObject = xmlXPathEvalExpression(xmlCharFrom(query), xpathContext)
+            }
+
             if xpathObject != nil {
                 let nodes = xpathObject.memory.nodesetval
                 if xmlXPathNodeSetIsEmpty(nodes) == false {
@@ -77,8 +84,9 @@ extension HTMLNode  {
                     } else {
                         var resultArray = Array<HTMLNode>()
                         for item in nodesArray {
-                            let matchedNode = HTMLNode(pointer:item)
-                            resultArray.append(matchedNode)
+                            if let matchedNode = HTMLNode(pointer:item) {
+                                resultArray.append(matchedNode)
+                            }
                         }
                         result = resultArray
                     }
@@ -111,10 +119,7 @@ extension HTMLNode  {
     
     func nodeForXPath(query : String, inout error : NSError?) -> HTMLNode?
     {
-        if let pointer = self.pointer {
-            return performXPathQuery(pointer, query:query, returnSingleNode: true, error: &error) as? HTMLNode
-        }
-        return nil
+        return performXPathQuery(pointer, query:query, returnSingleNode: true, error: &error) as? HTMLNode
     }
     
     /*! Returns the first descendant node for a XPath query
@@ -124,10 +129,7 @@ extension HTMLNode  {
     
     func nodeForXPath(query : String) -> HTMLNode?
     {
-        if let pointer = self.pointer {
-            return performXPathQuery(pointer, query:query, returnSingleNode: true, error: nil) as? HTMLNode
-        }
-        return nil
+        return performXPathQuery(pointer, query:query, returnSingleNode: true, error: nil) as? HTMLNode
     }
     
     /*! Returns all descendant nodes for a XPath query
@@ -138,10 +140,7 @@ extension HTMLNode  {
     
     func nodesForXPath(query : String, inout error : NSError?) -> Array<HTMLNode>
     {
-        if let pointer = self.pointer {
-            return performXPathQuery(pointer, query:query, returnSingleNode:false, error:&error) as Array<HTMLNode>
-        }
-        return Array<HTMLNode>()
+        return performXPathQuery(pointer, query:query, returnSingleNode:false, error:&error) as Array<HTMLNode>
         
     }
     
@@ -152,10 +151,7 @@ extension HTMLNode  {
     
     func nodesForXPath(query : String) -> Array<HTMLNode>
     {
-        if let pointer = self.pointer {
-            return performXPathQuery(pointer, query:query, returnSingleNode:false, error: nil) as Array<HTMLNode>
-        }
-        return Array<HTMLNode>()
+        return performXPathQuery(pointer, query:query, returnSingleNode:false, error: nil) as Array<HTMLNode>
     }
     
     
