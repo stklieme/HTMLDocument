@@ -68,7 +68,6 @@ extension HTMLNode  {
         if xpathContext != nil {
             var xpathObject : xmlXPathObjectPtr
             
-            println(query)
             if (query.hasPrefix("//") || query.hasPrefix("./")) {
                 xpathObject = xmlXPathNodeEval(node, xmlCharFrom(query), xpathContext)
             } else {
