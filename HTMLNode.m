@@ -269,9 +269,14 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     return (self.isDocumentNode) ? nil : [NSString stringWithUTF8String:(const char *) xmlNode_->name];
 }
 
-- (NSString *)className // actually classValue
+- (NSString *)classValue
 {
 	return [self attributeForName:kClassKey];
+}
+
+- (NSString *)IDValue
+{
+    return [self attributeForName:kIDKey];
 }
 
 - (NSString *)hrefValue
@@ -964,6 +969,21 @@ void childrenWithAttributeValueEndsWith(const xmlChar * attrName, const xmlChar 
 - (NSArray *)siblingsWithClass:(NSString *)classValue
 {
     return [self siblingsWithAttribute:kClassKey valueMatches:classValue];
+}
+
+- (HTMLNode *)descendantWithID:(NSString *)IDValue
+{
+    return childWithAttributeValueMatches(BAD_CAST "id", BAD_CAST [IDValue UTF8String], xmlNode_->children, YES);
+}
+
+- (HTMLNode *)childWithID:(NSString *)IDValue
+{
+    return childWithAttributeValueMatches(BAD_CAST "id", BAD_CAST [IDValue UTF8String], xmlNode_->children, NO);
+}
+
+- (HTMLNode *)siblingWithID:(NSString *)IDValue
+{
+    return childWithAttributeValueMatches(BAD_CAST "id", BAD_CAST [IDValue UTF8String], xmlNode_->next, NO);
 }
 
 HTMLNode * childOfTagValueMatches(const xmlChar * tagName, const xmlChar * value, xmlNode * node, BOOL recursive)

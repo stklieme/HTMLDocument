@@ -105,7 +105,7 @@ extension NSString {
     }
     
     // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
-    func dateValueWithFormat(dateFormat: NSString, timeZone:NSTimeZone) -> NSDate?
+    func dateValueWithFormat(dateFormat: String, timeZone:NSTimeZone) -> NSDate?
     {
         if self.length == 0 { return nil }
         let dateFormatter = NSDateFormatter()
@@ -125,6 +125,7 @@ extension NSString {
     
     let DUMP_BUFFER_SIZE : UInt = 4000
     let kClassKey = "class"
+    let kIDKey = "id"
     
     /*!
     * Private variables for the current node and its pointer
@@ -141,7 +142,7 @@ extension NSString {
     */
     
     init?(pointer: xmlNodePtr? = nil) {
-        if pointer != nil && pointer?.hashValue != 0 {
+        if pointer != nil && pointer!.hashValue != 0 {
             self.pointer = pointer!
             self.node = pointer!.memory
         } else {
@@ -268,10 +269,16 @@ extension NSString {
     
     /*! The value for the class attribute*/
     
-    var className : String? { // actually classValue
+    var classValue : String? {
         return attributeForName(kClassKey)
     }
     
+    /*! The value for the id attribute*/
+    
+    var IDValue : String? {
+        return attributeForName(kIDKey)
+    }
+
     /*! The value for the href attribute*/
     
     var hrefValue : String? {
@@ -390,7 +397,10 @@ extension NSString {
     */
     
     var rawStringValue : String? {
-        return stringFrom(node.children.memory.content)
+        if node.children.hashValue != 0 {
+            return stringFrom(node.children.memory.content)
+        }
+        return nil
     }
     
     /*! The string value of a node trimmed by whitespace and newline characters
@@ -627,10 +637,8 @@ extension NSString {
     private func childWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
             for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    
                     if xmlStrEqual(attr.memory.children.memory.content, attrValue) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
@@ -1196,66 +1204,96 @@ extension NSString {
         return array
     }
     
-    /*! Returns the first descendant node with the specifed class name
+    /*! Returns the first descendant node with the specifed class value
     * \param classValue The name of the class
     * \returns The first found descendant node or nil
     */
     
-    func descendantWithClass(classValue : String) -> HTMLNode?
+    func descendantWithClass(value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: true)
+        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed class name
+    /*! Returns the first child node with the specifed class value
     * \param classValue The name of the class
     * \returns The first found child node or nil
     */
     
-    func childWithClass(classValue : NSString) -> HTMLNode?
+    func childWithClass(value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.children, recursive: false)
+        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed class name
+    /*! Returns the first sibling node with the specifed class value
     * \param classValue The name of the class
     * \returns The first found sibling node or nil
     */
     
-    func siblingWithClass(classValue : NSString) -> HTMLNode?
+    func siblingWithClass(value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom("class"), attrValue:xmlCharFrom(classValue), nodePtr: node.next, recursive: false)
+        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns all descendant nodes with the specifed class name
+    /*! Returns all descendant nodes with the specifed class value
     * \param classValue The name of the class
     * \returns The array of all found descendant nodes or an empty array
     */
     
-    func descendantsWithClass(classValue : NSString) -> Array<HTMLNode>
+    func descendantsWithClass(value : String) -> Array<HTMLNode>
     {
-        return self.descendantsWithAttribute(kClassKey, valueMatches:classValue)
+        return self.descendantsWithAttribute(kClassKey, valueMatches:value)
     }
     
-    /*! Returns all child nodes with the specifed class name
+    /*! Returns all child nodes with the specifed class value
     * \param classValue The name of the class
     * \returns The array of all found child nodes or an empty array
     */
     
-    func childrenWithClass(classValue : NSString) -> Array<HTMLNode>
+    func childrenWithClass(value : String) -> Array<HTMLNode>
     {
-        return self.childrenWithAttribute(kClassKey, valueMatches:classValue)
+        return self.childrenWithAttribute(kClassKey, valueMatches:value)
     }
     
-    /*! Returns all sibling nodes with the specifed class name
+    /*! Returns all sibling nodes with the specifed class value
     * \param classValue The name of the class
     * \returns The array of all found sibling nodes or an empty array
     */
     
-    func siblingsWithClass(classValue : NSString) -> Array<HTMLNode>
+    func siblingsWithClass(value : String) -> Array<HTMLNode>
     {
-        return self.siblingsWithAttribute(kClassKey, valueMatches:classValue)
+        return self.siblingsWithAttribute(kClassKey, valueMatches:value)
     }
     
+    /*! Returns the first descendant node with the specifed id value
+    * \param classValue The name of the class
+    * \returns The first found descendant node or nil
+    */
+    
+    func descendantWithID(value : String) -> HTMLNode?
+    {
+        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
+    }
+    
+    /*! Returns the first child node with the specifed id value
+    * \param classValue The name of the class
+    * \returns The first found child node or nil
+    */
+    
+    func childWithID(value : String) -> HTMLNode?
+    {
+        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
+    }
+    
+    /*! Returns the first sibling node with the specifed id value
+    * \param classValue The name of the class
+    * \returns The first found sibling node or nil
+    */
+    
+    func siblingWithID(value : String) -> HTMLNode?
+    {
+        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.next, recursive: false)
+    }
+
     
     private func childOfTagValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
@@ -1615,7 +1653,7 @@ extension NSString {
     // creates a xmlChar from a String
     
     func xmlCharFrom(string: String) -> UnsafePointer<xmlChar> {
-        let cData = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+        let cData = string.dataUsingEncoding(NSUTF8StringEncoding)
         return UnsafePointer<xmlChar>(cData!.bytes)
     }
     

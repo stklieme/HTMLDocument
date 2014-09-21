@@ -37,6 +37,7 @@
 #import <libxml/HTMLtree.h>
 
 #define kClassKey @"class"
+#define kIDKey @"id"
 
 // ARCMacros by John Blanco
 // added a macro for computed readonly properties which return always autoreleased objects
@@ -147,7 +148,10 @@
 @property (SAFE_ARC_READONLY_OBJ_PROP) NSString *tagName;
 
 /*! The value for the class attribute*/
-@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *className;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *classValue;
+
+/*! The value for the id attribute*/
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSString *IDValue;
 
 /*! The value for the href attribute*/
 @property (SAFE_ARC_READONLY_OBJ_PROP) NSString *hrefValue;
@@ -413,6 +417,48 @@
  */
 - (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
+/*! Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found descendant nodes or an empty array
+ */
+- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found child nodes or an empty array
+ */
+- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found sibling nodes or an empty array
+ */
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+
+/*! Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found descendant nodes or an empty array
+ */
+- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+
+/*! Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found child nodes or an empty array
+ */
+- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+
+/*! Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value
+ * \param attributeName The name of the attribute
+ * \param attributeValue The partial string of the attribute value
+ * \returns The array of all found sibling nodes or an empty array
+ */
+- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+
 /*! Returns the first descendant node with the specifed attribute name
  * \param attributeName The name of the attribute
  * \returns The first found descendant node or nil
@@ -449,41 +495,59 @@
  */
 - (NSArray *)siblingsWithAttribute:(NSString *)attributeName;
 
-/*! Returns the first descendant node with the specifed class name
+/*! Returns the first descendant node with the specifed class value
  * \param classValue The name of the class
  * \returns The first found descendant node or nil
  */
 - (HTMLNode *)descendantWithClass:(NSString *)classValue;
 
-/*! Returns the first child node with the specifed class name
+/*! Returns the first child node with the specifed class value
  * \param classValue The name of the class
  * \returns The first found child node or nil
  */
 - (HTMLNode *)childWithClass:(NSString *)classValue;
 
-/*! Returns the first sibling node with the specifed class name
+/*! Returns the first sibling node with the specifed class value
  * \param classValue The name of the class
  * \returns The first found sibling node or nil
  */
 - (HTMLNode *)siblingWithClass:(NSString *)classValue;
 
-/*! Returns all descendant nodes with the specifed class name
+/*! Returns all descendant nodes with the specifed class value
  * \param classValue The name of the class
  * \returns The array of all found descendant nodes or an empty array
  */
 - (NSArray *)descendantsWithClass:(NSString *)classValue;
 
-/*! Returns all child nodes with the specifed class name
+/*! Returns all child nodes with the specifed class value
  * \param classValue The name of the class
  * \returns The array of all found child nodes or an empty array
  */
 - (NSArray *)childrenWithClass:(NSString *)classValue;
 
-/*! Returns all sibling nodes with the specifed class name
+/*! Returns all sibling nodes with the specifed class value
  * \param classValue The name of the class
  * \returns The array of all found sibling nodes or an empty array
  */
 - (NSArray *)siblingsWithClass:(NSString *)classValue;
+
+/*! Returns the first descendant node with the specifed id value
+ * \param classValue The name of the class
+ * \returns The first found descendant node or nil
+ */
+- (HTMLNode *)descendantWithID:(NSString *)IDValue;
+
+/*! Returns the first child node with the specifed id value
+ * \param classValue The name of the class
+ * \returns The first found child node or nil
+ */
+- (HTMLNode *)childWithID:(NSString *)IDValue;
+
+/*! Returns the first sibling node with the specifed id value
+ * \param classValue The name of the class
+ * \returns The first found sibling node or nil
+ */
+- (HTMLNode *)siblingWithID:(NSString *)IDValue;
 
 /*! Returns the first descendant node with the specifed tag name and string value matching exactly
  * \param tagName The name of the tag
