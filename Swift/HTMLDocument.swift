@@ -85,7 +85,7 @@ class HTMLDocument : NSObject {
     init?(data: NSData?, encoding: NSStringEncoding, error: NSErrorPointer)
     {
         super.init()
-        var errorCode = 0
+        var errorCode = 1
         if let actualData = data {
             if actualData.length > 0 {
                 let cfEncoding : CFStringEncoding = CFStringConvertNSStringEncodingToEncoding(encoding)
@@ -99,21 +99,19 @@ class HTMLDocument : NSObject {
                     let xmlDocRootNode : xmlNodePtr = xmlDocGetRootElement(htmlDoc);
                     if xmlDocRootNode != nil && String.fromCString(UnsafePointer<CChar>(xmlDocRootNode.memory.name)) == "html" {
                         rootNode = HTMLNode(pointer: xmlDocRootNode)
+                        errorCode = 0
                     } else {
                         errorCode = 3
                     }
                 } else {
                     errorCode = 2
                 }
-            } else {
-                errorCode = 1
             }
         }
         if errorCode != 0 {
             if error != nil { error.memory = errorForCode(errorCode) }
             return nil
         }
-       
     }
     
     /*! Initializes and returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding
