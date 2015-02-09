@@ -110,10 +110,14 @@ extension HTMLNode  {
 
     // MARK: - Objective-C wrapper for XPath Query function
     
-    /*! Returns the first descendant node for a XPath query
-    * \param query The XPath query string
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /** 
+    Returns the first descendant node for a XPath query.
+    
+    :param: query The XPath query string.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeForXPath(query : String, inout error : NSError?) -> HTMLNode?
@@ -121,9 +125,12 @@ extension HTMLNode  {
         return performXPathQuery(pointer, query:query, returnSingleNode: true, error: &error) as? HTMLNode
     }
     
-    /*! Returns the first descendant node for a XPath query
-    * \param query The XPath query string
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a XPath query.
+    
+    :param: query The XPath query string.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeForXPath(query : String) -> HTMLNode?
@@ -131,21 +138,27 @@ extension HTMLNode  {
         return performXPathQuery(pointer, query:query, returnSingleNode: true, error: nil) as? HTMLNode
     }
     
-    /*! Returns all descendant nodes for a XPath query
-    * \param query The XPath query string
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a XPath query.
+    
+    :param: query The XPath query string.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesForXPath(query : String, inout error : NSError?) -> Array<HTMLNode>
     {
         return performXPathQuery(pointer, query:query, returnSingleNode:false, error:&error) as Array<HTMLNode>
-        
     }
     
-    /*! Returns all descendant nodes for a XPath query
-    * \param query The XPath query string
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a XPath query.
+    
+    :param: query The XPath query string.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesForXPath(query : String) -> Array<HTMLNode>
@@ -157,10 +170,14 @@ extension HTMLNode  {
     // MARK: - specific XPath Query methods
     // Note: In the HTMLNode main class all appropriate query methods begin with descendant instead of node
     
-    /*! Returns the first descendant node for a specified tag name
-    * \param tagName The tag name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified tag name.
+    
+    :param: tagName The tag name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeOfTag(tagName : String, inout error : NSError?) -> HTMLNode?
@@ -168,9 +185,12 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.node(tagName), error:&error)
     }
     
-    /*! Returns the first descendant node for a specified tag name
-    * \param tagName The tag name
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified tag name.
+    
+    :param: tagName The tag name.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeOfTag(tagName : String) -> HTMLNode?
@@ -178,10 +198,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.node(tagName))
     }
     
-    /*! Returns all descendant nodes for a specified tag name
-    * \param tagName The tag name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified tag name.
+    
+    :param: tagName The tag name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesOfTag(tagName : String, inout error : NSError?) -> Array<HTMLNode>
@@ -189,9 +213,12 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.node(tagName), error:&error)
     }
     
-    /*! Returns all descendant nodes for a specified tag name
-    * \param tagName The tag name
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified tag name.
+    
+    :param: tagName The tag name.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesOfTag(tagName : String) -> Array<HTMLNode>
@@ -199,11 +226,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.node(tagName))
     }
     
-    /*! Returns the first descendant node for a matching tag name and matching attribute name
-    * \param tagName The tag name
-    * \param attributeName The attribute name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching tag name and matching attribute name.
+    
+    :param: tagName The tag name.
+    
+    :param: attributeName The attribute name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeOfTag(tagName : String, withAttribute attribute : String, inout error : NSError?) -> HTMLNode?
@@ -211,10 +243,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.nodeWithAttribute(tagName, attribute), error:&error)
     }
     
-    /*! Returns the first descendant node for a matching tag name and matching attribute name
-    * \param tagName The tag name
-    * \param attributeName The attribute name
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching tag name and matching attribute name.
+    
+    :param: tagName The tag name.
+    
+    :param: attributeName The attribute name.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeOfTag(tagName : String, withAttribute attribute : String) -> HTMLNode?
@@ -222,11 +258,16 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.nodeWithAttribute(tagName, attribute))
     }
     
-    /*! Returns all descendant nodes for a matching tag name and matching attribute name
-    * \param tagName The tag name
-    * \param attributeName The attribute name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching tag name and matching attribute name.
+    
+    :param: tagName The tag name.
+    
+    :param: attributeName The attribute name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesOfTag(tagName : String, withAttribute attribute : String, inout error : NSError?) -> Array<HTMLNode>
@@ -234,11 +275,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.nodeWithAttribute(tagName, attribute), error:&error)
     }
     
-    /*! Returns all descendant nodes for a matching tag name and matching attribute name
-    * \param tagName The tag name
-    * \param attributeName The attribute name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching tag name and matching attribute name.
+    
+    :param: tagName The tag name.
+    
+    :param: attributeName The attribute name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesOfTag(tagName : String, withAttribute attribute : String) -> Array<HTMLNode>
@@ -246,10 +292,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.nodeWithAttribute(tagName, attribute))
     }
 
-    /*! Returns the first descendant node for a specified attribute name
-    * \param attributeName The attribute name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified attribute name.
+    
+    :param: attributeName The attribute name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String, inout error : NSError?) -> HTMLNode?
@@ -257,9 +307,12 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attribute(attributeName), error:&error)
     }
     
-    /*! Returns the first descendant node for a specified attribute name
-    * \param attributeName The attribute name
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified attribute name.
+    
+    :param: attributeName The attribute name.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String) -> HTMLNode?
@@ -267,9 +320,12 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attribute(attributeName))
     }
     
-    /*! Returns all descendant nodes for a specified attribute name
-    * \param attributeName The attribute name
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified attribute name.
+    
+    :param: attributeName The attribute name.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String, inout error : NSError?)  -> Array<HTMLNode>
@@ -277,10 +333,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attribute(attributeName), error:&error)
     }
     
-    /*! Returns all descendant nodes for a specified attribute name
-    * \param attributeName The attribute name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified attribute name.
+    
+    :param: attributeName The attribute name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String) -> Array<HTMLNode>
@@ -288,11 +348,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attribute(attributeName))
     }
     
-    /*! Returns the first descendant node for a matching attribute name and matching attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and matching attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String, valueMatches value : String, inout error : NSError?) -> HTMLNode?
@@ -300,10 +365,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeIsEqual(attributeName, value), error:&error)
     }
     
-    /*! Returns the first descendant node for a matching attribute name and matching attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and matching attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String, valueMatches value : String) -> HTMLNode?
@@ -311,11 +380,16 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeIsEqual(attributeName, value))
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and matching attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and matching attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String, valueMatches value : String, inout error : NSError?) -> Array<HTMLNode>
@@ -323,10 +397,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeIsEqual(attributeName, value), error:&error)
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and matching attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and matching attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String, valueMatches value : String) -> Array<HTMLNode>
@@ -334,11 +412,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeIsEqual(attributeName, value))
     }
     
-    /*! Returns the first descendant node for a matching attribute name and beginning of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and beginning of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
 
     func nodeWithAttribute(attributeName : String,  valueBeginsWith value : String, inout error : NSError?) -> HTMLNode?
@@ -346,10 +429,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeBeginsWith(attributeName, value), error:&error)
     }
     
-    /*! Returns the first descendant node for a matching attribute name and beginning of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and beginning of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String,  valueBeginsWith value : String) -> HTMLNode?
@@ -357,11 +444,16 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeBeginsWith(attributeName, value))
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and beginning of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and beginning of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueBeginsWith value : String, inout error : NSError?) -> Array<HTMLNode>
@@ -369,10 +461,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeBeginsWith(attributeName, value), error:&error)
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and beginning of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and beginning of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueBeginsWith value : String) -> Array<HTMLNode>
@@ -380,11 +476,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeBeginsWith(attributeName, value))
     }
     
-    /*! Returns the first descendant node for a matching attribute name and ending of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and ending of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String,  valueEndsWith value : String, inout error : NSError?) -> HTMLNode?
@@ -392,10 +493,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeEndsWith(attributeName, value), error:&error)
     }
     
-    /*! Returns the first descendant node for a matching attribute name and ending of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and ending of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String,  valueEndsWith value : String) -> HTMLNode?
@@ -403,11 +508,16 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeEndsWith(attributeName, value))
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and ending of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and ending of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueEndsWith value : String, inout error : NSError?) -> Array<HTMLNode>
@@ -415,10 +525,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeEndsWith(attributeName, value), error:&error)
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and ending of the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and ending of the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueEndsWith value : String) -> Array<HTMLNode>
@@ -426,11 +540,16 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeEndsWith(attributeName, value))
     }
     
-    /*! Returns the first descendant node for a matching attribute name and containing the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and containing the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String,  valueContains value : String, inout error : NSError?) -> HTMLNode?
@@ -438,10 +557,14 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeContains(attributeName, value), error:&error)
     }
     
-    /*! Returns the first descendant node for a matching attribute name and containing the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a matching attribute name and containing the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithAttribute(attributeName : String,  valueContains value : String) -> HTMLNode?
@@ -449,11 +572,16 @@ extension HTMLNode  {
         return nodeForXPath(XPathPredicate.attributeContains(attributeName, value))
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and containing the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and containing the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueContains value : String, inout error : NSError?) -> Array<HTMLNode>
@@ -461,10 +589,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeContains(attributeName, value), error:&error)
     }
     
-    /*! Returns all descendant nodes for a matching attribute name and containing the attribute value
-    * \param attributeName The attribute name
-    * \param value The attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a matching attribute name and containing the attribute value.
+    
+    :param: attributeName The attribute name.
+    
+    :param: value The attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithAttribute(attributeName : String,  valueContains value : String) -> Array<HTMLNode>
@@ -472,10 +604,14 @@ extension HTMLNode  {
         return nodesForXPath(XPathPredicate.attributeContains(attributeName, value))
     }
     
-    /*! Returns the first descendant node for a specified class name
-    * \param classValue The class name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified class name.
+    
+    :param: classValue The class name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithClass(classValue : String, inout error : NSError?) -> HTMLNode?
@@ -483,9 +619,12 @@ extension HTMLNode  {
         return nodeWithAttribute(kClassKey, valueMatches:classValue, error:&error)
     }
     
-    /*! Returns the first descendant node for a specified class name
-    * \param classValue The class name
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node for a specified class name.
+    
+    :param: classValue The class name.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func nodeWithClass(classValue : String) -> HTMLNode?
@@ -493,10 +632,14 @@ extension HTMLNode  {
         return nodeWithAttribute(kClassKey, valueMatches:classValue)
     }
     
-    /*! Returns all descendant nodes for a specified class name
-    * \param classValue The class name
-    * \param error An error object that, on return, identifies any Xpath errors.
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified class name.
+    
+    :param: classValue The class name.
+    
+    :param: error An error object that, on return, identifies any Xpath errors.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithClass(classValue : String, inout error : NSError?) -> Array<HTMLNode>
@@ -504,9 +647,12 @@ extension HTMLNode  {
         return nodesWithAttribute(kClassKey, valueMatches:classValue, error:&error)
     }
     
-    /*! Returns all descendant nodes for a specified class name
-    * \param classValue The class name
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes for a specified class name.
+    
+    :param: classValue The class name..
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func nodesWithClass(classValue : String) -> Array<HTMLNode>

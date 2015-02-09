@@ -38,33 +38,33 @@ import Foundation
 
 class HTMLDocument : NSObject {
     
-    /** The class name */
+    /** The class name. */
     
     override var className : String {
         return "HTMLDocument"
     }
     
-    /** The document pointer */
+    /** The document pointer. */
     
     var htmlDoc: htmlDocPtr = nil
     
-    /** The root node*/
+    /** The root node.*/
     
     var rootNode: HTMLNode!
     
-    /** The head node*/
+    /** The head node.*/
     
     var head: HTMLNode? {
         return rootNode.childOfTag("head")
     }
     
-    /** The body node*/
+    /** The body node.*/
     
     var body: HTMLNode? {
         return rootNode.childOfTag("body")
     }
     
-    /** The value of the title tag in the head node*/
+    /** The value of the title tag in the head node.*/
     var title: String? {
         return head?.childOfTag("title")?.stringValue
     }
@@ -74,11 +74,16 @@ class HTMLDocument : NSObject {
     
     // default text encoding is UTF-8
     
-    /*! Initializes and returns an HTMLDocument object created from an NSData object with specified string encoding
-    * \param data A data object with HTML or XML content
-    * \param encoding The string encoding for the HTML or XML content
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from an NSData object with specified string encoding.
+    
+    :param: data A data object with HTML or XML content.
+    
+    :param: encoding The string encoding for the HTML or XML content.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     // designated initializer
@@ -114,10 +119,14 @@ class HTMLDocument : NSObject {
         }
     }
     
-    /*! Initializes and returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding
-    * \param data A data object with HTML or XML content
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from an NSData object with assumed UTF-8 string encoding.
+    
+    :param: data A data object with HTML or XML content.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     convenience init?(data: NSData?, inout error: NSError?)
@@ -125,11 +134,16 @@ class HTMLDocument : NSObject {
         self.init(data:data, encoding:NSUTF8StringEncoding, error:&error)
     }
     
-    /*! Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with specified string encoding
-    * \param url An NSURL object specifying a URL source
-    * \param encoding The string encoding for the HTML or XML content
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with specified string encoding.
+    
+    :param: url An NSURL object specifying a URL source.
+    
+    :param: encoding The string encoding for the HTML or XML content.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     convenience init?(contentsOfURL url:NSURL, encoding:NSStringEncoding, inout error:NSError?)
@@ -139,10 +153,14 @@ class HTMLDocument : NSObject {
         self.init(data:data, encoding:encoding, error:&error)
     }
     
-    /*! Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with assumed UTF-8 string encoding
-    * \param url An NSURL object specifying a URL source
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from the HTML or XML contents of a URL-referenced source with assumed UTF-8 string encoding.
+    
+    :param: url An NSURL object specifying a URL source.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     convenience init?(contentsOfURL url: NSURL, inout error: NSError?)
@@ -150,11 +168,16 @@ class HTMLDocument : NSObject {
         self.init(contentsOfURL:url, encoding:NSUTF8StringEncoding, error:&error)
     }
     
-    /*! Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with specified string encoding
-    * \param url An NSURL object specifying a URL source
-    * \param encoding The string encoding for the HTML or XML content
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with specified string encoding.
+    
+    :param: url An NSURL object specifying a URL source.
+    
+    :param: encoding The string encoding for the HTML or XML content.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     convenience init?(HTMLString string: String, encoding:NSStringEncoding, inout error:NSError?)
@@ -162,11 +185,16 @@ class HTMLDocument : NSObject {
         self.init(data:string.dataUsingEncoding(encoding), encoding:encoding, error:&error)
     }
     
-    /*! Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with assumed UTF-8 string encoding
-    * \param url An NSURL object specifying a URL source
-    * \param encoding The string encoding for the HTML or XML content
-    * \param error An error object that, on return, identifies any parsing errors and warnings or connection problems.
-    * \returns An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons
+    /**
+    Initializes and returns an HTMLDocument object created from a string containing HTML or XML markup text with assumed UTF-8 string encoding.
+    
+    :param: url An NSURL object specifying a URL source.
+    
+    :param: encoding The string encoding for the HTML or XML content.
+    
+    :param: error An error object that, on return, identifies any parsing errors and warnings or connection problems.
+    
+    :returns: An initialized HTMLDocument object, or nil if initialization fails because of parsing errors or other reasons.
     */
     
     convenience init?(HTMLString string: String, inout error:NSError?)

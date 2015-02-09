@@ -119,7 +119,7 @@ extension NSString {
 
 @objc class HTMLNode : SequenceType, Equatable, Printable {
     
-    /*!
+    /**
     * Constants
     */
     
@@ -127,7 +127,7 @@ extension NSString {
     let kClassKey = "class"
     let kIDKey = "id"
     
-    /*!
+    /**
     * Private variables for the current node and its pointer
     */
     
@@ -136,9 +136,12 @@ extension NSString {
     
     // MARK: - init methods
     
-    /*! Initializes and returns a newly allocated HTMLNode object with a specified xmlNode pointer.
-    * \param xmlNode The xmlNode pointer for the created node object
-    * \returns An initizlized HTMLNode object or nil if the object couldn't be created
+    /**
+    Initializes and returns a newly allocated HTMLNode object with a specified xmlNode pointer.
+    
+    :param: xmlNode The xmlNode pointer for the created node object.
+    
+    :returns: An initizlized HTMLNode object or nil if the object couldn't be created.
     */
     
     init?(pointer: xmlNodePtr? = nil) {
@@ -152,48 +155,60 @@ extension NSString {
     
     // MARK: - navigating methods
     
-    /*! The parent node
-    * \returns The parent node or nil
+    /**
+    The parent node.
+    
+    :returns: The parent node or nil.
     */
     
     var parent : HTMLNode? {
         return HTMLNode(pointer: node.parent)
     }
     
-    /*! The next sibling node
-    * \returns The next sibling node or nil
+    /**
+    The next sibling node.
+    
+    :returns: The next sibling node or nil.
     */
     
     var nextSibling : HTMLNode? {
         return HTMLNode(pointer: node.next)
     }
     
-    /*! The previous sibling node
-    * \returns The previous sibling or nil
+    /**
+    The previous sibling node.
+    
+    :returns: The previous sibling or nil.
     */
     
     var previousSibling : HTMLNode? {
         return HTMLNode(pointer: node.prev)
     }
     
-    /*! The first child node
-    * \returns The first child or nil
+    /**
+    The first child node.
+    
+    :returns: The first child or nil.
     */
     
     var firstChild : HTMLNode? {
         return HTMLNode(pointer: node.children)
     }
     
-    /*! The last child node
-    * \returns The last child or nil
+    /**
+    The last child node.
+    
+    :returns: The last child or nil.
     */
     
     var lastChild : HTMLNode? {
         return HTMLNode(pointer: node.last)
     }
     
-    /*! The first level of children
-    * \returns The children array or an empty array
+    /**
+    The first level of children.
+    
+    :returns: The children array or an empty array.
     */
     
     // uncomment the '&& xmlNodeIsText(currentNode) == 0'to consider all the text nodes
@@ -209,9 +224,12 @@ extension NSString {
         return array
     }
     
-    /*! The child node at specified index
-    * \param index The specified index
-    * \returns The child node or nil if the index is invalid
+    /**
+    The child node at specified index.
+    
+    :param: index The specified index.
+    
+    :returns: The child node or nil if the index is invalid.
     */
     
     func childAtIndex(index : Int) -> HTMLNode?
@@ -220,7 +238,8 @@ extension NSString {
         return (index < countElements(childrenArray)) ? childrenArray[index] : nil
     }
     
-    /*! The number of children*/
+    /**
+    The number of children*/
     
     var childCount : UInt {
         return xmlChildElementCount(pointer)
@@ -228,9 +247,12 @@ extension NSString {
     
     // MARK: - attributes and values of current node (self)
     
-    /*! The attribute value of a node matching a given name
-    * \param attributeName A name of an attribute
-    * \returns The attribute value or ab empty string if the attribute could not be found
+    /**
+    The attribute value of a node matching a given name.
+    
+    :param: attributeName A name of an attribute.
+    
+    :returns: The attribute value or ab empty string if the attribute could not be found.
     */
     
     func attributeForName(name : String) -> String?
@@ -244,8 +266,10 @@ extension NSString {
         return nil
     }
     
-    /*! All attributes and values as dictionary
-    * \returns a dictionary which could be empty if there are no attributes. Returns nil if the node is nil
+    /**
+    All attributes and values as dictionary.
+    
+    :returns: a dictionary which could be empty if there are no attributes. Returns nil if the node is nil
     */
     
     var attributes : Dictionary<String, String>? {
@@ -259,45 +283,59 @@ extension NSString {
         return (result.count > 0) ? result : nil
     }
     
-    /*! The tag name
-    * \returns The tag name or an empty string
+    /**
+    The tag name.
+    
+    :returns: The tag name or an empty string
     */
     
     var tagName : String? {
         return stringFrom(node.name)
     }
     
-    /*! The value for the class attribute*/
+    /**
+    The value for the class attribute.
+    */
     
     var classValue : String? {
         return attributeForName(kClassKey)
     }
     
-    /*! The value for the id attribute*/
+    /**
+    The value for the id attribute.
+    */
     
     var IDValue : String? {
         return attributeForName(kIDKey)
     }
 
-    /*! The value for the href attribute*/
+    /**
+    The value for the href attribute.
+    */
     
     var hrefValue : String? {
         return attributeForName("href")
     }
     
-    /*! The value for the src attribute*/
+    /**
+    The value for the src attribute.
+    */
     
     var srcValue : String? {
         return attributeForName("src")
     }
     
-    /*! The integer value*/
+    /**
+    The integer value.
+    */
     
     var integerValue : Int? {
         return self.stringValue?.toInt()
     }
     
-    /*! The double value*/
+    /**
+    The double value.
+    */
     
     var doubleValue : Double? {
         if let integer = self.integerValue {
@@ -306,9 +344,12 @@ extension NSString {
         return nil
     }
     
-    /*! Returns the double value of the string value for a specified locale identifier
-    * \param identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    * \returns The double value of the string value depending on the parameter
+    /**
+    Returns the double value of the string value for a specified locale identifier.
+    
+    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    
+    :returns: The double value of the string value depending on the parameter.
     */
     
     func doubleValueForLocaleIdentifier(identifier : String) -> Double?
@@ -316,10 +357,14 @@ extension NSString {
         return self.stringValue?.doubleValueForLocaleIdentifier(identifier)
     }
     
-    /*! Returns the double value of the string value for a specified locale identifier considering a plus sign prefix
-    * \param identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    * \param flag Considers the plus sign in the string if YES
-    * \returns The double value of the string value depending on the parameters
+    /**
+    Returns the double value of the string value for a specified locale identifier considering a plus sign prefix.
+    
+    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    
+    :param: flag Considers the plus sign in the string if YES.
+    
+    :returns: The double value of the string value depending on the parameters.
     */
     
     func doubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag : Bool) -> Double?
@@ -327,9 +372,12 @@ extension NSString {
         return self.stringValue?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
     }
     
-    /*! Returns the double value of the text content for a specified locale identifier
-    * \param identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    * \returns The double value of the text content depending on the parameter
+    /**
+    Returns the double value of the text content for a specified locale identifier.
+    
+    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    
+    :returns: The double value of the text content depending on the parameter.
     */
     
     func contentDoubleValueForLocaleIdentifier(identifier : String) -> Double?
@@ -337,10 +385,14 @@ extension NSString {
         return self.textContent?.doubleValueForLocaleIdentifier(identifier)
     }
     
-    /*! Returns the double value of the text content for a specified locale identifier considering a plus sign prefix
-    * \param identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    * \param flag Considers the plus sign in the string if YES
-    * \returns The double value of the text content depending on the parameters
+    /**
+    Returns the double value of the text content for a specified locale identifier considering a plus sign prefix.
+    
+    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    
+    :param: flag Considers the plus sign in the string if YES.
+    
+    :returns: The double value of the text content depending on the parameters.
     */
     
     func contentDoubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag: Bool) -> Double?
@@ -348,10 +400,14 @@ extension NSString {
         return self.textContent?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
     }
     
-    /*! Returns the date value of the string value for a specified date format and time zone
-    * \param dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    * \param timeZone A time zone
-    * \returns The date value of the string value depending on the parameters
+    /**
+    Returns the date value of the string value for a specified date format and time zone.
+    
+    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    
+    :param: timeZone A time zone.
+    
+    :returns: The date value of the string value depending on the parameters.
     */
     
     // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
@@ -360,10 +416,14 @@ extension NSString {
         return self.stringValue?.dateValueWithFormat(dateFormat, timeZone:timeZone)
     }
     
-    /*! Returns the date value of the text content for a specified date format and time zone
-    * \param dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    * \param timeZone A time zone
-    * \returns The date value of the text content depending on the parameters
+    /**
+    Returns the date value of the text content for a specified date format and time zone.
+    
+    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    
+    :param: timeZone A time zone.
+    
+    :returns: The date value of the text content depending on the parameters.
     */
     
     func contentDateValueForFormat(dateFormat: String, timeZone: NSTimeZone) -> NSDate?
@@ -371,9 +431,12 @@ extension NSString {
         return self.textContent?.dateValueWithFormat(dateFormat, timeZone:timeZone)
     }
     
-    /*! Returns the date value of the string value for a specified date format
-    * \param dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    * \returns The date value of the string value depending on the parameter
+    /**
+    Returns the date value of the string value for a specified date format.
+    
+    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    
+    :returns: The date value of the string value depending on the parameter.
     */
     
     func dateValueForFormat(dateFormat: String) -> NSDate?
@@ -382,9 +445,12 @@ extension NSString {
     }
     
     
-    /*! Returns the date value of the text content for a specified date format
-    * \param dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    * \returns The date value of the text content depending on the parameter
+    /**
+    Returns the date value of the text content for a specified date format.
+    
+    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    
+    :returns: The date value of the text content depending on the parameter.
     */
     
     func contentDateValueForFormat(dateFormat: String) -> NSDate?
@@ -392,8 +458,10 @@ extension NSString {
         return self.contentDateValueForFormat(dateFormat, timeZone:NSTimeZone.systemTimeZone())
     }
     
-    /*! The raw string
-    * \returns The raw string value or an empty string
+    /**
+    The raw string.
+    
+    :returns: The raw string value or an empty string.
     */
     
     var rawStringValue : String? {
@@ -403,24 +471,30 @@ extension NSString {
         return nil
     }
     
-    /*! The string value of a node trimmed by whitespace and newline characters
-    * \returns The string value or an empty string
+    /**
+    The string value of a node trimmed by whitespace and newline characters.
+    
+    :returns: The string value or an empty string.
     */
     
     var stringValue : String? {
         return self.rawStringValue?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
     }
     
-    /*! The string value of a node trimmed by whitespace and newline characters and collapsing all multiple occurrences of whitespace and newline characters within the string into a single space
-    * \returns The trimmed and collapsed string value or an empty string
+    /**
+    The string value of a node trimmed by whitespace and newline characters and collapsing all multiple occurrences of whitespace and newline characters within the string into a single space.
+    
+    :returns: The trimmed and collapsed string value or an empty string.
     */
     
     var stringValueCollapsingWhitespace : String? {
         return self.stringValue?.collapseWhitespaceAndNewLine()
     }
     
-    /*! The raw html text dump
-    * \returns The raw html text dump or an empty string
+    /**
+    The raw html text dump.
+    
+    :returns: The raw html text dump or an empty string.
     */
     
     var HTMLString : String? {
@@ -458,7 +532,9 @@ extension NSString {
         }
     }
     
-    /*! The element type of the node*/
+    /**
+    The element type of the node.
+    */
     
     var elementType : String? {
         let rawType = xmlElementTypeToInt(node.type)
@@ -492,40 +568,50 @@ extension NSString {
         return nil
     }
     
-    /*! Is the node an attribute node
-    * \returns Boolean value or  nil if the node doesn't exist
+    /**
+    Is the node an attribute node.
+    
+    :returns: Boolean value or  nil if the node doesn't exist.
     */
     
     var isAttributeNode : Bool? {
         return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.rawValue
     }
     
-    /*! Is the node a document node
-    * \returns Boolean value or  nil if the node doesn't exist
+    /**
+    Is the node a document node.
+    
+    :returns: Boolean value or  nil if the node doesn't exist.
     */
     
     var isDocumentNode : Bool? {
         return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.rawValue
     }
     
-    /*! Is the node an element node
-    * \returns Boolean value or  nil if the node doesn't exist
+    /**
+    Is the node an element node.
+    
+    :returns: Boolean value or  nil if the node doesn't exist.
     */
     
     var isElementNode : Bool? {
         return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.rawValue
     }
     
-    /*! Is the node a text node
-    * \returns Boolean value or  nil if the node doesn't exist
+    /**
+    Is the node a text node.
+    
+    :returns: Boolean value or  nil if the node doesn't exist.
     */
     
     var isTextNode : Bool? {
         return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.rawValue
     }
     
-    /*! The array of all text content of children
-    * \returns The text content array - each array item is trimmed by whitespace and newline characters - or an empty array
+    /**
+    The array of all text content of children.
+    
+    :returns: The text content array - each array item is trimmed by whitespace and newline characters - or an empty array.
     */
     
     var textContentOfChildren : Array<String> {
@@ -550,32 +636,40 @@ extension NSString {
         return nil
     }
     
-    /*! The raw text content of descendant-or-self
-    * \returns The raw text content of the node and all its descendants or an empty string
+    /**
+    The raw text content of descendant-or-self.
+    
+    :returns: The raw text content of the node and all its descendants or an empty string.
     */
     
     var rawTextContent : String? {
         return textContent(pointer)
     }
     
-    /*! The text content of descendant-or-self trimmed by whitespace and newline characters
-    * \returns The trimmed text content of the node and all its descendants or an empty string
+    /**
+    The text content of descendant-or-self trimmed by whitespace and newline characters.
+    
+    :returns: The trimmed text content of the node and all its descendants or an empty string.
     */
     
     var textContent : String? {
         return textContent(pointer)?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
     }
     
-    /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
-    * \returns An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string
+    /**
+    The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
+    
+    :returns: An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string.
     */
     
     var textContentCollapsingWhitespace : String? {
         return self.textContent?.collapseWhitespaceAndNewLine()
     }
     
-    /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
-    * \returns An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string
+    /**
+    The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
+    
+    :returns: An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string.
     */
     
     var textContentOfDescendants : Array<String> {
@@ -584,8 +678,10 @@ extension NSString {
         return array
     }
     
-    /*! The raw html text dump of descendant-or-self
-    * \returns The raw html text dump of the node and all its descendants or an empty string
+    /**
+    The raw html text dump of descendant-or-self.
+    
+    :returns: The raw html text dump of the node and all its descendants or an empty string.
     */
     
     var HTMLContent : String?  {
@@ -636,6 +732,7 @@ extension NSString {
     
     private func childWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
+        // if xmlStrstr(attrValue, "output") != nil { println(stringFrom(attrValue)) }
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
                 if xmlStrEqual(attr.memory.name, attrName) == 1 {
@@ -656,6 +753,7 @@ extension NSString {
     
     private func childWithAttributeValueContains(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
     {
+        // if xmlStrstr(attrValue, "output") != nil { println(stringFrom(attrValue)) }
         for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
             
             for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
@@ -846,10 +944,14 @@ extension NSString {
     }
     
     
-    /*! Returns the first descendant node with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func descendantWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
@@ -857,10 +959,14 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the first child node with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
@@ -869,10 +975,14 @@ extension NSString {
         
     }
     
-    /*! Returns the first sibling node with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the first sibling node with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
@@ -880,10 +990,14 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func descendantWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
@@ -891,10 +1005,14 @@ extension NSString {
         return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the first child node with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
@@ -902,10 +1020,14 @@ extension NSString {
         return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the first sibling node with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
@@ -913,10 +1035,14 @@ extension NSString {
         return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns the first descendant node with the specifed attribute name and value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed attribute name and value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     
@@ -925,10 +1051,14 @@ extension NSString {
         return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed attribute name and value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the first child node with the specifed attribute name and value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
@@ -936,10 +1066,14 @@ extension NSString {
         return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
@@ -947,10 +1081,14 @@ extension NSString {
         return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns the first descendant node with the specifed attribute name and value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed attribute name and value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     
@@ -959,10 +1097,14 @@ extension NSString {
         return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed attribute name and value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the first child node with the specifed attribute name and value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
@@ -970,10 +1112,14 @@ extension NSString {
         return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
@@ -981,10 +1127,14 @@ extension NSString {
         return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
@@ -994,10 +1144,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
@@ -1007,10 +1161,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name and value matching exactly
-    * \param attributeName The name of the attribute
-    * \param attributeValue The value of the attribute
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name and value matching exactly.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The value of the attribute.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
@@ -1020,10 +1178,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
@@ -1033,10 +1195,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
@@ -1046,10 +1212,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name and the value contains the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name and the value contains the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
@@ -1059,10 +1229,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
@@ -1072,10 +1246,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
@@ -1085,10 +1263,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value.
+    
+    :param: attributeName The name of the attribute
+    :param: attributeValue The partial string of the attribute value
+    :returns: The array of all found sibling nodes or an empty array
     */
     
     func siblingsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
@@ -1099,10 +1279,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
@@ -1112,10 +1296,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
@@ -1125,10 +1313,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value
-    * \param attributeName The name of the attribute
-    * \param attributeValue The partial string of the attribute value
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value.
+    
+    :param: attributeName The name of the attribute.
+    
+    :param: attributeValue The partial string of the attribute value.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
@@ -1138,9 +1330,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns the first descendant node with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The first found descendant node or nil
+    /**
+    Returns the first descendant node with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The first found descendant node or nil.
     */
     
     func descendantWithAttribute(attributeName : String) -> HTMLNode?
@@ -1148,9 +1343,12 @@ extension NSString {
         return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The first found child node or nil
+    /**
+    Returns the first child node with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The first found child node or nil.
     */
     
     func childWithAttribute(attributeName : String) -> HTMLNode?
@@ -1158,9 +1356,12 @@ extension NSString {
         return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The first found sibling node or nil
+    /**
+    Returns the first sibling node with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The first found sibling node or nil.
     */
     
     func siblingWithAttribute(attributeName : String) -> HTMLNode?
@@ -1168,9 +1369,12 @@ extension NSString {
         return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithAttribute(attributeName : String) -> Array<HTMLNode>
@@ -1180,9 +1384,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithAttribute(attributeName : String) -> Array<HTMLNode>
@@ -1192,9 +1399,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name
-    * \param attributeName The name of the attribute
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name.
+    
+    :param: attributeName The name of the attribute.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsWithAttribute(attributeName : String) -> Array<HTMLNode>
@@ -1204,9 +1414,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns the first descendant node with the specifed class value
-    * \param classValue The name of the class
-    * \returns The first found descendant node or nil
+    /**
+    Returns the first descendant node with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found descendant node or nil.
     */
     
     func descendantWithClass(value : String) -> HTMLNode?
@@ -1214,9 +1427,12 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed class value
-    * \param classValue The name of the class
-    * \returns The first found child node or nil
+    /**
+    Returns the first child node with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found child node or nil.
     */
     
     func childWithClass(value : String) -> HTMLNode?
@@ -1224,9 +1440,12 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed class value
-    * \param classValue The name of the class
-    * \returns The first found sibling node or nil
+    /**
+    Returns the first sibling node with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found sibling node or nil.
     */
     
     func siblingWithClass(value : String) -> HTMLNode?
@@ -1234,9 +1453,12 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.next, recursive: false)
     }
     
-    /*! Returns all descendant nodes with the specifed class value
-    * \param classValue The name of the class
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsWithClass(value : String) -> Array<HTMLNode>
@@ -1244,9 +1466,12 @@ extension NSString {
         return self.descendantsWithAttribute(kClassKey, valueMatches:value)
     }
     
-    /*! Returns all child nodes with the specifed class value
-    * \param classValue The name of the class
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenWithClass(value : String) -> Array<HTMLNode>
@@ -1254,9 +1479,12 @@ extension NSString {
         return self.childrenWithAttribute(kClassKey, valueMatches:value)
     }
     
-    /*! Returns all sibling nodes with the specifed class value
-    * \param classValue The name of the class
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed class value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsWithClass(value : String) -> Array<HTMLNode>
@@ -1264,9 +1492,12 @@ extension NSString {
         return self.siblingsWithAttribute(kClassKey, valueMatches:value)
     }
     
-    /*! Returns the first descendant node with the specifed id value
-    * \param classValue The name of the class
-    * \returns The first found descendant node or nil
+    /**
+    Returns the first descendant node with the specifed id value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found descendant node or nil.
     */
     
     func descendantWithID(value : String) -> HTMLNode?
@@ -1274,9 +1505,12 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
     }
     
-    /*! Returns the first child node with the specifed id value
-    * \param classValue The name of the class
-    * \returns The first found child node or nil
+    /**
+    Returns the first child node with the specifed id value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found child node or nil.
     */
     
     func childWithID(value : String) -> HTMLNode?
@@ -1284,9 +1518,12 @@ extension NSString {
         return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
     }
     
-    /*! Returns the first sibling node with the specifed id value
-    * \param classValue The name of the class
-    * \returns The first found sibling node or nil
+    /**
+    Returns the first sibling node with the specifed id value.
+    
+    :param: classValue The name of the class.
+    
+    :returns: The first found sibling node or nil.
     */
     
     func siblingWithID(value : String) -> HTMLNode?
@@ -1335,10 +1572,14 @@ extension NSString {
         return nil
     }
     
-    /*! Returns the first descendant node with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func descendantOfTag(tagName : String, valueMatches: String) -> HTMLNode?
@@ -1346,10 +1587,14 @@ extension NSString {
         return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches),  nodePtr:node.children, recursive:true)
     }
     
-    /*! Returns the first child node with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the first child node with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childOfTag(tagName : String, valueMatches: String) -> HTMLNode?
@@ -1357,10 +1602,14 @@ extension NSString {
         return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, recursive:false)
     }
     
-    /*! Returns the first sibling node with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the first sibling node with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingOfTag(tagName : String, valueMatches: String) -> HTMLNode?
@@ -1371,10 +1620,14 @@ extension NSString {
         return nil
     }
     
-    /*! Returns the first descendant node with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The first found descendant node or nil if no node matches the parameters
+    /**
+    Returns the first descendant node with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The first found descendant node or nil if no node matches the parameters.
     */
     
     func descendantOfTag(tagName : String, valueContains: String) -> HTMLNode?
@@ -1382,10 +1635,14 @@ extension NSString {
         return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:true)
     }
     
-    /*! Returns the child node with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The first found child node or nil if no node matches the parameters
+    /**
+    Returns the child node with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The first found child node or nil if no node matches the parameters.
     */
     
     func childOfTag(tagName : String, valueContains: String) -> HTMLNode?
@@ -1393,10 +1650,14 @@ extension NSString {
         return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:false)
     }
     
-    /*! Returns the sibling node with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The first found sibling node or nil if no node matches the parameters
+    /**
+    Returns the sibling node with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The first found sibling node or nil if no node matches the parameters.
     */
     
     func siblingOfTag(tagName : String, valueContains: String) -> HTMLNode?
@@ -1442,10 +1703,14 @@ extension NSString {
         }
     }
     
-    /*! Returns all descendant nodes with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
@@ -1455,10 +1720,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
@@ -1468,10 +1737,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed tag name and string value matching exactly
-    * \param tagName The name of the tag
-    * \param value The string value of the tag
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed tag name and string value matching exactly.
+    
+    :param: tagName The name of the tag.
+    
+    :param: value The string value of the tag.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
@@ -1481,10 +1754,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all descendant nodes with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
@@ -1494,10 +1771,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
@@ -1507,10 +1788,14 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed attribute name and the string value contains the specified value
-    * \param tagName The name of the attribute
-    * \param value The partial string of the attribute value
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed attribute name and the string value contains the specified value.
+    
+    :param: tagName The name of the attribute.
+    
+    :param: value The partial string of the attribute value.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siblingsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
@@ -1543,9 +1828,12 @@ extension NSString {
         return nil
     }
     
-    /*! Returns the first descendant node with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The first found descendant node or nil
+    /**
+    Returns the first descendant node with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The first found descendant node or nil.
     */
     
     func descendantOfTag(tagName : String) -> HTMLNode?
@@ -1553,9 +1841,12 @@ extension NSString {
         return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:true)
     }
     
-    /*! Returns the first child node with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The first found child node or nil
+    /**
+    Returns the first child node with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The first found child node or nil.
     */
     
     func childOfTag(tagName : String) -> HTMLNode?
@@ -1563,9 +1854,12 @@ extension NSString {
         return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:false)
     }
     
-    /*! Returns the first sibling node with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The first found sibling node or nil
+    /**
+    Returns the first sibling node with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The first found sibling node or nil.
     */
     
     func siblingOfTag(tagName : String) -> HTMLNode?
@@ -1594,9 +1888,12 @@ extension NSString {
         }
     }
     
-    /*! Returns all descendant nodes with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The array of all found descendant nodes or an empty array
+    /**
+    Returns all descendant nodes with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The array of all found descendant nodes or an empty array.
     */
     
     func descendantsOfTag(tagName : String) -> Array<HTMLNode>
@@ -1606,9 +1903,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns all child nodes with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The array of all found child nodes or an empty array
+    /**
+    Returns all child nodes with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The array of all found child nodes or an empty array.
     */
     
     func childrenOfTag(tagName : String) -> Array<HTMLNode>
@@ -1618,9 +1918,12 @@ extension NSString {
         return array
     }
     
-    /*! Returns all sibling nodes with the specifed tag name
-    * \param tagName The name of the tag
-    * \returns The array of all found sibling nodes or an empty array
+    /**
+    Returns all sibling nodes with the specifed tag name.
+    
+    :param: tagName The name of the tag.
+    
+    :returns: The array of all found sibling nodes or an empty array.
     */
     
     func siiblingsOfTag(tagName : String) -> Array<HTMLNode>
