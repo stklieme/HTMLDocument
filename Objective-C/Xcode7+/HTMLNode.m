@@ -218,7 +218,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     return (index < [childrenArray count]) ? [childrenArray objectAtIndex:index] : nil;
 }
 
-- (NSArray *)children
+- (NSArray<HTMLNode *> *)children
 {
     xmlNode *currentNode = NULL;
     NSMutableArray *array = [NSMutableArray array];
@@ -261,7 +261,7 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     
     for (xmlAttrPtr attr = xmlNode_->properties; attr ; attr = attr->next) {
         value = [NSString stringWithUTF8String:(const char *)attr->children->content];
-        [result setValue:value forKey:[NSString stringWithUTF8String:(const char *)attr->name]];
+        [result setObject:value forKey:[NSString stringWithUTF8String:(const char *)attr->name]];
     }
     
     return result;
@@ -420,14 +420,14 @@ void textContentOfChildren(xmlNode * node, NSMutableArray * array, BOOL recursiv
 }
 
 
-- (NSArray *)textContentOfChildren
+- (NSArray<NSString *> *)textContentOfChildren
 {
     NSMutableArray *array = [NSMutableArray array];
     textContentOfChildren(xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)textContentOfDescendants
+- (NSArray<NSString *> *)textContentOfDescendants
 {
     NSMutableArray *array = [NSMutableArray array];
     textContentOfChildren(xmlNode_->children, array, YES);
@@ -825,84 +825,84 @@ void childrenWithAttributeValueEndsWith(const xmlChar * attrName, const xmlChar 
     return childWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, NO);
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueMatches(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttributeValueContains(BAD_CAST [attributeName UTF8String], BAD_CAST [attributeValue UTF8String], xmlNode_->next, array, NO);
@@ -924,21 +924,21 @@ void childrenWithAttributeValueEndsWith(const xmlChar * attrName, const xmlChar 
     return childWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->next, NO);
 }
 
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenWithAttribute(BAD_CAST [attributeName UTF8String], xmlNode_->next, array, NO);
@@ -960,17 +960,17 @@ void childrenWithAttributeValueEndsWith(const xmlChar * attrName, const xmlChar 
     return childWithAttributeValueMatches(BAD_CAST "class", BAD_CAST [classValue UTF8String], xmlNode_->next, NO);
 }
 
-- (NSArray *)descendantsWithClass:(NSString *)classValue
+- (NSArray<HTMLNode *> *)descendantsWithClass:(NSString *)classValue
 {
     return [self descendantsWithAttribute:kClassKey valueMatches:classValue];
 }
 
-- (NSArray *)childrenWithClass:(NSString *)classValue
+- (NSArray<HTMLNode *> *)childrenWithClass:(NSString *)classValue
 {
     return [self childrenWithAttribute:kClassKey valueMatches:classValue];
 }
 
-- (NSArray *)siblingsWithClass:(NSString *)classValue
+- (NSArray<HTMLNode *> *)siblingsWithClass:(NSString *)classValue
 {
     return [self siblingsWithAttribute:kClassKey valueMatches:classValue];
 }
@@ -1112,42 +1112,42 @@ void childrenOfTagValueContains(const xmlChar * tagName, const xmlChar * value, 
 }
 
 
-- (NSArray *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueMatches(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, array, NO);
     return array;
 }
 
-- (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTagValueContains(BAD_CAST [tagName UTF8String], BAD_CAST [value UTF8String], xmlNode_->next, array, NO);
@@ -1208,21 +1208,21 @@ void childrenOfTag(const xmlChar * tagName, xmlNode * node, NSMutableArray * arr
     }
 }
 
-- (NSArray *)descendantsOfTag:(NSString *)tagName
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->children, array, YES);
     return array;
 }
 
-- (NSArray *)childrenOfTag:(NSString *)tagName
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->children, array, NO);
     return array;
 }
 
-- (NSArray *)siblingsOfTag:(NSString *)tagName
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName
 {
     NSMutableArray *array = [NSMutableArray array];
     childrenOfTag(BAD_CAST [tagName UTF8String], xmlNode_->next, array, NO);

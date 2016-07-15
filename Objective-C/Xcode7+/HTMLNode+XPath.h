@@ -70,13 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesForXPath:(NSString *)query error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesForXPath:(NSString *)query error:(NSError **)error;
 
 /*! Returns all descendant nodes for a XPath query
  * \param query The XPath query string
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesForXPath:(NSString *)query;
+- (NSArray<HTMLNode *> *)nodesForXPath:(NSString *)query;
 
 // Note: In the HTMLNode main class all appropriate query methods begin with descendant instead of node 
 
@@ -98,13 +98,13 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesOfTag:(NSString *)tagName error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName error:(NSError **)error;
 
 /*! Returns all descendant nodes for a specified tag name
  * \param tagName The tag name
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesOfTag:(NSString *)tagName;
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName;
 
 /*! Returns the first descendant node for a matching tag name and matching attribute name
  * \param tagName The tag name
@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error;
 
 /*! Returns all descendant nodes for a matching tag name and matching attribute name
  * \param tagName The tag name
@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName;
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName;
 
 /*! Returns the first descendant node for a specified attribute name
  * \param attributeName The attribute name
@@ -154,14 +154,14 @@ NS_ASSUME_NONNULL_BEGIN
  * \param attributeName The attribute name
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName error:(NSError **)error;
 
 /*! Returns all descendant nodes for a specified attribute name
  * \param attributeName The attribute name
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName;
 
 /*! Returns the first descendant node for a matching attribute name and matching attribute value
  * \param attributeName The attribute name
@@ -184,14 +184,14 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error;
 
 /*! Returns all descendant nodes for a matching attribute name and matching attribute value
  * \param attributeName The attribute name
  * \param value The attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value;
 
 /*! Returns the first descendant node for a matching attribute name and beginning of the attribute value
  * \param attributeName The attribute name
@@ -214,14 +214,14 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error;
 
 /*! Returns all descendant nodes for a matching attribute name and beginning of the attribute value
 * \param attributeName The attribute name
 * \param value The attribute value
 * \returns The array of all found descendant nodes or an empty array
 */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value;
 
 /*! Returns the first descendant node for a matching attribute name and ending of the attribute value
  * \param attributeName The attribute name
@@ -244,14 +244,14 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error;
 
 /*! Returns all descendant nodes for a matching attribute name and ending of the attribute value
  * \param attributeName The attribute name
  * \param value The attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value;
 
 /*! Returns the first descendant node for a matching attribute name and containing the attribute value
  * \param attributeName The attribute name
@@ -274,14 +274,14 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error;
 
 /*! Returns all descendant nodes for a matching attribute name and containing the attribute value
  * \param attributeName The attribute name
  * \param value The attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value;
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value;
 
 /*! Returns the first descendant node for a specified class name
  * \param classValue The class name
@@ -301,13 +301,13 @@ NS_ASSUME_NONNULL_BEGIN
  * \param error An error object that, on return, identifies any Xpath errors.
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithClass:(NSString *)classValue error:(NSError **)error;
+- (NSArray<HTMLNode *> *)nodesWithClass:(NSString *)classValue error:(NSError **)error;
 
 /*! Returns all descendant nodes for a specified class name
  * \param classValue The class name
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)nodesWithClass:(NSString *)classValue;
+- (NSArray<HTMLNode *> *)nodesWithClass:(NSString *)classValue;
 
 
 // Compare two nodes w.r.t document order with XPath

@@ -150,15 +150,15 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
 
 // perform XPath query and return all results
 
-- (NSArray *)nodesForXPath:(NSString *)query error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesForXPath:(NSString *)query error:(NSError **)error
 {
     self.xpathError = nil;
-    NSArray *result = (NSArray *)performXPathQuery(xmlNode_, query, NO, error != nil, self);
+    NSArray<HTMLNode *> *result = (NSArray<HTMLNode *> *)performXPathQuery(xmlNode_, query, NO, error != nil, self);
     if (error) *error = xpathError;
     return result;
 }
 
-- (NSArray *)nodesForXPath:(NSString *)query
+- (NSArray<HTMLNode *> *)nodesForXPath:(NSString *)query
 {
     return [self nodesForXPath:query error:nil];
 }
@@ -175,12 +175,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeOfTag:tagName error:nil];
 }
 
-- (NSArray *)nodesOfTag:(NSString *)tagName error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateNode, tagName] error:error];
 }
 
-- (NSArray *)nodesOfTag:(NSString *)tagName
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName
 {
     return [self nodesOfTag:tagName error:nil];
 }
@@ -195,12 +195,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:attributeName error:nil];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateAttribute, attributeName] error:error];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName
 {
     return [self nodesWithAttribute:attributeName error:nil];
 }
@@ -215,12 +215,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeOfTag:tagName withAttribute:attributeName error:nil];
 }
 
-- (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateNodeWithAttribute, tagName, attributeName] error:error];
 }
 
-- (NSArray *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName
+- (NSArray<HTMLNode *> *)nodesOfTag:(NSString *)tagName withAttribute:(NSString *)attributeName
 {
     return [self nodesOfTag:tagName withAttribute:attributeName error:nil];
 }
@@ -235,12 +235,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:attributeName valueMatches:value error:nil];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateAttributeIsEqual, attributeName, value] error:error];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueMatches:(NSString *)value
 {
     return [self nodesWithAttribute:attributeName valueMatches:value error:nil];
 }
@@ -255,12 +255,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:attributeName valueBeginsWith:value error:nil];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateAttributeBeginsWith, attributeName, value] error:error];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)value
 {
     return [self nodesWithAttribute:attributeName valueBeginsWith:value error:nil];
 }
@@ -275,12 +275,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:attributeName valueEndsWith:value error:nil];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateAttributeEndsWith, value, attributeName, attributeName, value] error:error];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)value
 {
     return [self nodesWithAttribute:attributeName valueEndsWith:value error:nil];
 }
@@ -295,12 +295,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:attributeName valueContains:value error:nil];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value error:(NSError **)error
 {
     return [self nodesForXPath:[NSString stringWithFormat:kXPathPredicateAttributeContains, attributeName, value] error:error];
 }
 
-- (NSArray *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value
+- (NSArray<HTMLNode *> *)nodesWithAttribute:(NSString *)attributeName valueContains:(NSString *)value
 {
     return [self nodesWithAttribute:attributeName valueContains:value error:nil];
 }
@@ -315,12 +315,12 @@ static id performXPathQuery(xmlNode * node, NSString * query, BOOL returnSingleN
     return [self nodeWithAttribute:kClassKey valueMatches:classValue];
 }
 
-- (NSArray *)nodesWithClass:(NSString *)classValue error:(NSError **)error
+- (NSArray<HTMLNode *> *)nodesWithClass:(NSString *)classValue error:(NSError **)error
 {
     return [self nodesWithAttribute:kClassKey valueMatches:classValue error:error];
 }
 
-- (NSArray *)nodesWithClass:(NSString *)classValue
+- (NSArray<HTMLNode *> *)nodesWithClass:(NSString *)classValue
 {
     return [self nodesWithAttribute:kClassKey valueMatches:classValue];
 }

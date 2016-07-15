@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*! The first level of children
  * \returns The children array or an empty array
  */
-@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *children;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray<HTMLNode *> *children;
 
 /*! The number of children*/
 @property (readonly) NSUInteger childCount;
@@ -243,7 +243,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*! The array of all text content of children
  * \returns The text content array - each array item is trimmed by whitespace and newline characters - or an empty array
  */
-@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *textContentOfChildren;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray<NSString *> *textContentOfChildren;
 
 /*! The element type of the node*/
 @property (readonly) xmlElementType elementType;
@@ -280,7 +280,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*! The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters
  * \returns An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or nil
  */
-@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray *textContentOfDescendants;
+@property (SAFE_ARC_READONLY_OBJ_PROP) NSArray<NSString *> *textContentOfDescendants;
 
 /*! The raw html text dump of descendant-or-self
  * \returns The raw html text dump of the node and all its descendants or nil
@@ -382,84 +382,84 @@ NS_ASSUME_NONNULL_BEGIN
  * \param attributeValue The value of the attribute
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 
 /*! Returns all child nodes with the specifed attribute name and value matching exactly
  * \param attributeName The name of the attribute
  * \param attributeValue The value of the attribute
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 
 /*! Returns all sibling nodes with the specifed attribute name and value matching exactly
  * \param attributeName The name of the attribute
  * \param attributeValue The value of the attribute
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueMatches:(NSString *)attributeValue;
 
 /*! Returns all descendant nodes with the specifed attribute name and the value contains the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
 /*! Returns all child nodes with the specifed attribute name and the value contains the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
 /*! Returns all sibling nodes with the specifed attribute name and the value contains the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueContains:(NSString *)attributeValue;
 
 /*! Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
 
 /*! Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
 
 /*! Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueBeginsWith:(NSString *)attributeValue;
 
 /*! Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
 
 /*! Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
 
 /*! Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value
  * \param attributeName The name of the attribute
  * \param attributeValue The partial string of the attribute value
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName valueEndsWith:(NSString *)attributeValue;
 
 /*! Returns the first descendant node with the specifed attribute name
  * \param attributeName The name of the attribute
@@ -483,19 +483,19 @@ NS_ASSUME_NONNULL_BEGIN
  * \param attributeName The name of the attribute
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithAttribute:(NSString *)attributeName;
+- (NSArray<HTMLNode *> *)descendantsWithAttribute:(NSString *)attributeName;
 
 /*! Returns all child nodes with the specifed attribute name
  * \param attributeName The name of the attribute
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithAttribute:(NSString *)attributeName;
+- (NSArray<HTMLNode *> *)childrenWithAttribute:(NSString *)attributeName;
 
 /*! Returns all sibling nodes with the specifed attribute name
  * \param attributeName The name of the attribute
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithAttribute:(NSString *)attributeName;
+- (NSArray<HTMLNode *> *)siblingsWithAttribute:(NSString *)attributeName;
 
 /*! Returns the first descendant node with the specifed class value
  * \param classValue The name of the class
@@ -519,19 +519,19 @@ NS_ASSUME_NONNULL_BEGIN
  * \param classValue The name of the class
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsWithClass:(NSString *)classValue;
+- (NSArray<HTMLNode *> *)descendantsWithClass:(NSString *)classValue;
 
 /*! Returns all child nodes with the specifed class value
  * \param classValue The name of the class
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenWithClass:(NSString *)classValue;
+- (NSArray<HTMLNode *> *)childrenWithClass:(NSString *)classValue;
 
 /*! Returns all sibling nodes with the specifed class value
  * \param classValue The name of the class
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsWithClass:(NSString *)classValue;
+- (NSArray<HTMLNode *> *)siblingsWithClass:(NSString *)classValue;
 
 /*! Returns the first descendant node with the specifed id value
  * \param classValue The name of the class
@@ -577,21 +577,21 @@ NS_ASSUME_NONNULL_BEGIN
  * \param value The string value of the tag
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 
 /*! Returns all child nodes with the specifed tag name and string value matching exactly
  * \param tagName The name of the tag
  * \param value The string value of the tag
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 
 /*! Returns all sibling nodes with the specifed tag name and string value matching exactly
  * \param tagName The name of the tag
  * \param value The string value of the tag
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName valueMatches:(NSString *)value;
 
 /*! Returns the first descendant node with the specifed attribute name and the string value contains the specified value
  * \param tagName The name of the attribute
@@ -619,21 +619,21 @@ NS_ASSUME_NONNULL_BEGIN
  * \param value The partial string of the attribute value
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName valueContains:(NSString *)value;
 
 /*! Returns all child nodes with the specifed attribute name and the string value contains the specified value
  * \param tagName The name of the attribute
  * \param value The partial string of the attribute value
  * \returns The array of all found child nodes or an empty array
  */
-- (NSArray *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName valueContains:(NSString *)value;
 
 /*! Returns all sibling nodes with the specifed attribute name and the string value contains the specified value
  * \param tagName The name of the attribute
  * \param value The partial string of the attribute value
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value;
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName valueContains:(NSString *)value;
 
 /*! Returns the first descendant node with the specifed tag name
  * \param tagName The name of the tag
@@ -657,20 +657,20 @@ NS_ASSUME_NONNULL_BEGIN
  * \param tagName The name of the tag
  * \returns The array of all found descendant nodes or an empty array
  */
-- (NSArray *)descendantsOfTag:(NSString *)tagName;
+- (NSArray<HTMLNode *> *)descendantsOfTag:(NSString *)tagName;
 
 /*! Returns all child nodes with the specifed tag name
  * \param tagName The name of the tag
  * \returns The array of all found child nodes or an empty array
  */
 
-- (NSArray *)childrenOfTag:(NSString *)tagName;
+- (NSArray<HTMLNode *> *)childrenOfTag:(NSString *)tagName;
 
 /*! Returns all sibling nodes with the specifed tag name
  * \param tagName The name of the tag
  * \returns The array of all found sibling nodes or an empty array
  */
-- (NSArray *)siblingsOfTag:(NSString *)tagName;
+- (NSArray<HTMLNode *> *)siblingsOfTag:(NSString *)tagName;
 
 NS_ASSUME_NONNULL_END
 
