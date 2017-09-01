@@ -50,24 +50,23 @@ private enum XMLElementType : UInt32
 
 extension String {
     
-    func collapseCharacters(in characterSet: CharacterSet?, using separator: String) -> String?
+    func collapseCharacters(in characterSet: CharacterSet?, using separator: String) -> String
     {
-        if characterSet == nil { return self }
-        
-        let array = self.components(separatedBy: characterSet!)
+        guard let charSet = characterSet else { return self }
+        let array = self.components(separatedBy: charSet)
         let result = array.reduce("") { "\($0)\(separator)\($1)" }
         return result
     }
     
-    func collapseWhitespaceAndNewLine() -> String?
+    func collapseWhitespaceAndNewLine() -> String
     {
         return self.collapseCharacters(in: CharacterSet.whitespacesAndNewlines, using:" ")
     }
     
     // ISO 639 identifier e.g. en_US or fr_CH
-    func doubleValue(forLocaleIdentifier localeIdentifier: String?, consideringPlusSign: Bool = false) -> Double
+    func doubleValue(forLocaleIdentifier localeIdentifier: String?, consideringPlusSign: Bool = false) -> Double?
     {
-        if self.isEmpty { return 0.0 }
+        if self.isEmpty { return nil }
         let numberFormatter = NumberFormatter()
         if let identifier = localeIdentifier {
             let locale = Locale(identifier: identifier)
@@ -79,7 +78,7 @@ extension String {
         numberFormatter.numberStyle = .decimal
         let number = numberFormatter.number(from: self)
         
-        return number?.doubleValue ?? 0.0
+        return number?.doubleValue
     }
     
     // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
@@ -213,8 +212,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     /// - Parameters:
     ///   - index The specified index.
     /// - Returns: The node at given index or nil the attribute could not be found.
-    
-    
+
     func child(at index : Int) -> HTMLNode?
     {
         let childrenArray = self.children
