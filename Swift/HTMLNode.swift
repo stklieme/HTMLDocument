@@ -92,13 +92,15 @@ extension String {
         return dateFormatter.date(from: self)
     }
     
-    // convert UnsafePointer<xmlChar> to String
+    // convert String to UnsafePointer<xmlChar>
     
     func withXmlChar<T>(handler: (UnsafePointer<xmlChar>) throws -> T) rethrows -> T {
         let xmlstr = self.utf8CString.map { xmlChar(bitPattern: $0) }
         return try xmlstr.withUnsafeBufferPointer { try handler($0.baseAddress!) }
     }
 }
+
+// helper class to make the pointers `xmlAttr` and `xmlNode` a sequence
 
 private class XMLSequence<T> : Sequence {
     
@@ -128,7 +130,6 @@ private class XmlNodeSequence : XMLSequence<xmlNode> {
     override var next: Element { return current?.pointee.next }
     override init(node: Element) { super.init(node: node) }
 }
-
 
 class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
@@ -195,12 +196,12 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     /// The first level of children.
     
-    // uncomment the '&& xmlNodeIsText(currentNode) == 0'to consider all the text nodes
-    // see also the 'generate()' function
+    // delete 'where xmlNodeIsText(currentNode) == 0' to consider all the text nodes
+    // see also the 'makeIterator()' function
     
     var children : [HTMLNode] {
         var array = [HTMLNode]()
-        for currentNode in XmlNodeSequence(node: node.children) {
+        for currentNode in XmlNodeSequence(node: node.children) where xmlNodeIsText(currentNode) == 0 {
             if let node = HTMLNode(pointer: currentNode) {
                 array.append(node)
             }
@@ -209,8 +210,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     }
     
     /// The child node at specified index.
-    
+    /// - Parameters:
     ///   - index The specified index.
+    /// - Returns: The node at given index or nil the attribute could not be found.
     
     
     func child(at index : Int) -> HTMLNode?
@@ -383,7 +385,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     }
     
     private func textContentOfChildren(nodePtr : xmlNodePtr,
-                                       array : inout Array<String>,
+                                       array : inout [String],
                                        recursive : Bool)
     {
         for currentNode in XmlNodeSequence(node: nodePtr) {
@@ -457,7 +459,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     /// The array of all text content of children.
     
     var textContentOfChildren : [String] {
-        var array = [String] ()
+        var array = [String]()
         textContentOfChildren(nodePtr: node.children, array:&array, recursive:false)
         return array
     }
@@ -495,7 +497,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     /// The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
     
     var textContentOfDescendants : [String] {
-        var array = Array<String>()
+        var array = [String]()
         textContentOfChildren(nodePtr: node.children, array:&array, recursive:true)
         return array
     }
