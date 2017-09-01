@@ -1,222 +1,206 @@
 /*###################################################################################
-#                                                                                   #
-#    HTMLNode.swift                                                                 #
-#                                                                                   #
-#    Copyright © 2014 by Stefan Klieme                                              #
-#                                                                                   #
-#    Swift wrapper for HTML parser of libxml2                                       #
-#                                                                                   #
-#    Version 0.9 - 20. Sep 2014                                                     #
-#                                                                                   #
-#    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
-#               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
-#               add -lxml2 to target -> other linker flags                          #
-#               add Bridging-Header.h to your project and rename it as              #
-#                       [Modulename]-Bridging-Header.h                              #
-#                    where [Modulename] is the module name in your project          #
-#                                                                                   #
-#####################################################################################
-#                                                                                   #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of   #
-# this software and associated documentation files (the "Software"), to deal        #
-# in the Software without restriction, including without limitation the rights      #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies  #
-# of the Software, and to permit persons to whom the Software is furnished to do    #
-# so, subject to the following conditions:                                          #
-# The above copyright notice and this permission notice shall be included in        #
-# all copies or substantial portions of the Software.                               #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR        #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,          #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE       #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, #
-# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR      #
-# IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.     #
-#                                                                                   #
-###################################################################################*/
+ #                                                                                   #
+ #    HTMLNode.swift                                                                 #
+ #                                                                                   #
+ #    Copyright © 2014-2017 by Stefan Klieme                                         #
+ #                                                                                   #
+ #    Swift wrapper for HTML parser of libxml2                                       #
+ #                                                                                   #
+ #    Version 1.0 - 1. Sep 2017                                                      #
+ #                                                                                   #
+ #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
+ #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
+ #               add -lxml2 to target -> other linker flags                          #
+ #               add Bridging-Header.h to your project and rename it as              #
+ #                  [Modulename]-Bridging-Header.h                                   #
+ #                  where [Modulename] is the module name in your project            #
+ #                  or copy&paste the #import lines into your bridging header        #
+ #                                                                                   #
+ #####################################################################################
+ #                                                                                   #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy of   #
+ # this software and associated documentation files (the "Software"), to deal        #
+ # in the Software without restriction, including without limitation the rights      #
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies  #
+ # of the Software, and to permit persons to whom the Software is furnished to do    #
+ # so, subject to the following conditions:                                          #
+ # The above copyright notice and this permission notice shall be included in        #
+ # all copies or substantial portions of the Software.                               #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR        #
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,          #
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE       #
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, #
+ # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR      #
+ # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.     #
+ #                                                                                   #
+ ###################################################################################*/
 
 import Foundation
 
 private enum XMLElementType : UInt32
 {
-    case ELEMENT_NODE = 1
-    case ATTRIBUTE_NODE = 2
-    case TEXT_NODE = 3
-    case CDATA_SECTION_NODE = 4
-    case ENTITY_REF_NODE = 5
-    case ENTITY_NODE = 6
-    case PI_NODE = 7
-    case COMMENT_NODE = 8
-    case DOCUMENT_NODE = 9
-    case DOCUMENT_TYPE_NODE = 10
-    case DOCUMENT_FRAG_NODE = 11
-    case NOTATION_NODE = 12
-    case HTML_DOCUMENT_NODE = 13
-    case DTD_NODE = 14
-    case ELEMENT_DECL = 15
-    case ATTRIBUTE_DECL = 16
-    case ENTITY_DECL = 17
-    case NAMESPACE_DECL = 18
-    case XINCLUDE_START = 19
-    case XINCLUDE_END = 20
-    case DOCB_DOCUMENT_NODE = 21
+    case ELEMENT_NODE = 1, ATTRIBUTE_NODE = 2, TEXT_NODE = 3, CDATA_SECTION_NODE = 4
+    case ENTITY_REF_NODE = 5, ENTITY_NODE = 6, PI_NODE = 7, COMMENT_NODE = 8
+    case DOCUMENT_NODE = 9, DOCUMENT_TYPE_NODE = 10, DOCUMENT_FRAG_NODE = 11
+    case NOTATION_NODE = 12, HTML_DOCUMENT_NODE = 13, DTD_NODE = 14, ELEMENT_DECL = 15
+    case ATTRIBUTE_DECL = 16, ENTITY_DECL = 17, NAMESPACE_DECL = 18, XINCLUDE_START = 19
+    case XINCLUDE_END = 20, DOCB_DOCUMENT_NODE = 21
 }
 
 
-extension NSString {
+extension String {
     
-    func collapseCharactersinSet(characterSet: NSCharacterSet?,  usingSeparator separator: NSString) -> NSString?
+    func collapseCharacters(in characterSet: CharacterSet?, using separator: String) -> String?
     {
-        if characterSet == nil {
-            return self
-        }
+        if characterSet == nil { return self }
         
-        var array = self.componentsSeparatedByCharactersInSet(characterSet!)
+        let array = self.components(separatedBy: characterSet!)
         let result = array.reduce("") { "\($0)\(separator)\($1)" }
         return result
     }
     
-    func collapseWhitespaceAndNewLine() -> NSString?
+    func collapseWhitespaceAndNewLine() -> String?
     {
-        return self.collapseCharactersinSet(NSCharacterSet.whitespaceAndNewlineCharacterSet(), usingSeparator:" ")
+        return self.collapseCharacters(in: CharacterSet.whitespacesAndNewlines, using:" ")
     }
     
     // ISO 639 identifier e.g. en_US or fr_CH
-    func doubleValueForLocaleIdentifier(identifier: NSString) -> Double
+    func doubleValue(forLocaleIdentifier localeIdentifier: String?, consideringPlusSign: Bool = false) -> Double
     {
-        return self.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:false)
-    }
-    
-    func doubleValueForLocaleIdentifier(identifier: NSString?, consideringPlusSign:Bool) -> Double
-    {
-        if self.length == 0 { return 0.0 }
-        let numberFormatter = NSNumberFormatter()
-        if (identifier != nil) {
-            let locale = NSLocale(localeIdentifier:identifier!)
+        if self.isEmpty { return 0.0 }
+        let numberFormatter = NumberFormatter()
+        if let identifier = localeIdentifier {
+            let locale = Locale(identifier: identifier)
             numberFormatter.locale = locale
         }
         if consideringPlusSign && self.hasPrefix("+") {
             numberFormatter.positivePrefix = "+"
         }
-        numberFormatter.numberStyle = .DecimalStyle
-        let number = numberFormatter.numberFromString(self)
+        numberFormatter.numberStyle = .decimal
+        let number = numberFormatter.number(from: self)
         
-        return (number != nil) ? number!.doubleValue : 0.0
-        
+        return number?.doubleValue ?? 0.0
     }
     
     // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
-    func dateValueWithFormat(dateFormat: String, timeZone:NSTimeZone) -> NSDate?
+    func dateValue(withFormat format: String, timeZone: TimeZone?) -> Date?
     {
-        if self.length == 0 { return nil }
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = dateFormat
-        dateFormatter.timeZone = timeZone
-        return dateFormatter.dateFromString(self)
+        if self.isEmpty { return nil }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        if timeZone != nil { dateFormatter.timeZone = timeZone }
+        return dateFormatter.date(from: self)
     }
     
+    // convert UnsafePointer<xmlChar> to String
+    
+    func withXmlChar<T>(handler: (UnsafePointer<xmlChar>) throws -> T) rethrows -> T {
+        let xmlstr = self.utf8CString.map { xmlChar(bitPattern: $0) }
+        return try xmlstr.withUnsafeBufferPointer { try handler($0.baseAddress!) }
+    }
+}
+
+private class XMLSequence<T> : Sequence {
+    
+    typealias Element = UnsafeMutablePointer<T>?
+    var current: Element
+    var next: Element { return nil }
+    
+    init(node: Element) { self.current = node }
+    
+    func makeIterator() -> AnyIterator<UnsafeMutablePointer<T>> {
+        return AnyIterator {
+            guard let current = self.current else { return nil }
+            self.current = self.next
+            return current
+        }
+    }
+}
+
+private class XmlAttrSequence : XMLSequence<xmlAttr> {
+    
+    override var next: Element { return current?.pointee.next }
+    override init(node: Element) { super.init(node: node) }
+}
+
+private class XmlNodeSequence : XMLSequence<xmlNode> {
+    
+    override var next: Element { return current?.pointee.next }
+    override init(node: Element) { super.init(node: node) }
 }
 
 
-@objc class HTMLNode : SequenceType, Equatable, Printable {
+class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
-    /**
-    * Constants
-    */
+    // MARK: Constants
     
-    let DUMP_BUFFER_SIZE : UInt = 4000
+    private let dumpBufferSize = 4000
     let kClassKey = "class"
     let kIDKey = "id"
     
-    /**
-    * Private variables for the current node and its pointer
-    */
+    // MARK: XPath Error variables
     
-    var pointer : xmlNodePtr!
-    var node : xmlNode!
+    var xpathErrorCode : Int32 = 99999
+    var xpathErrorMessage = "Unknown Error"
+
+    // MARK: Private variables for the current node and its pointer
+    
+    let pointer : xmlNodePtr
+    fileprivate let node : xmlNode
     
     // MARK: - init methods
     
-    /**
-    Initializes and returns a newly allocated HTMLNode object with a specified xmlNode pointer.
+    /// Initializes and returns a newly allocated HTMLNode object with a specified xmlNode pointer.
+    /// - Parameters:
+    ///   - pointer: The xmlNode pointer for the created node object.
+    /// - Returns: An initiazlized HTMLNode object or nil if the object couldn't be created.
     
-    :param: xmlNode The xmlNode pointer for the created node object.
-    
-    :returns: An initizlized HTMLNode object or nil if the object couldn't be created.
-    */
-    
-    init?(pointer: xmlNodePtr? = nil) {
-        if pointer != nil && pointer!.hashValue != 0 {
-            self.pointer = pointer!
-            self.node = pointer!.memory
-        } else {
-            return nil
-        }
+    init?(pointer: xmlNodePtr!) {
+        guard let nodePointer = pointer else { return nil }
+        self.pointer = nodePointer
+        self.node = nodePointer.pointee
     }
     
     // MARK: - navigating methods
     
-    /**
-    The parent node.
-    
-    :returns: The parent node or nil.
-    */
+    /// The parent node.
     
     var parent : HTMLNode? {
         return HTMLNode(pointer: node.parent)
     }
     
-    /**
-    The next sibling node.
-    
-    :returns: The next sibling node or nil.
-    */
+    /// The next sibling node.
     
     var nextSibling : HTMLNode? {
         return HTMLNode(pointer: node.next)
     }
     
-    /**
-    The previous sibling node.
-    
-    :returns: The previous sibling or nil.
-    */
+    /// The previous sibling node.
     
     var previousSibling : HTMLNode? {
         return HTMLNode(pointer: node.prev)
     }
     
-    /**
-    The first child node.
-    
-    :returns: The first child or nil.
-    */
+    /// The first child node.
     
     var firstChild : HTMLNode? {
         return HTMLNode(pointer: node.children)
     }
     
-    /**
-    The last child node.
-    
-    :returns: The last child or nil.
-    */
+    /// The last child node.
     
     var lastChild : HTMLNode? {
         return HTMLNode(pointer: node.last)
     }
     
-    /**
-    The first level of children.
-    
-    :returns: The children array or an empty array.
-    */
+    /// The first level of children.
     
     // uncomment the '&& xmlNodeIsText(currentNode) == 0'to consider all the text nodes
     // see also the 'generate()' function
     
-    var children : Array<HTMLNode> {
+    var children : [HTMLNode] {
         var array = [HTMLNode]()
-        for var currentNode = node.children; currentNode != nil && xmlNodeIsText(currentNode) == 0; currentNode = currentNode.memory.next {
+        for currentNode in XmlNodeSequence(node: node.children) {
             if let node = HTMLNode(pointer: currentNode) {
                 array.append(node)
             }
@@ -224,487 +208,322 @@ extension NSString {
         return array
     }
     
-    /**
-    The child node at specified index.
+    /// The child node at specified index.
     
-    :param: index The specified index.
+    ///   - index The specified index.
     
-    :returns: The child node or nil if the index is invalid.
-    */
     
-    func childAtIndex(index : Int) -> HTMLNode?
+    func child(at index : Int) -> HTMLNode?
     {
         let childrenArray = self.children
-        return (index < countElements(childrenArray)) ? childrenArray[index] : nil
+        return (index < childrenArray.count) ? childrenArray[index] : nil
     }
     
-    /**
-    The number of children*/
+    /// The number of children
     
-    var childCount : UInt {
-        return xmlChildElementCount(pointer)
+    var childCount : Int {
+        return Int(xmlChildElementCount(pointer))
     }
     
     // MARK: - attributes and values of current node (self)
     
-    /**
-    The attribute value of a node matching a given name.
+    /// The attribute value of a node matching a given name.
+    /// - Parameters:
+    ///   - name: The name of an attribute.
+    /// - Returns: The attribute value or ab empty string if the attribute could not be found.
     
-    :param: attributeName A name of an attribute.
-    
-    :returns: The attribute value or ab empty string if the attribute could not be found.
-    */
-    
-    func attributeForName(name : String) -> String?
+    func attribute(for name : String) -> String?
     {
-        let attributeValue = xmlGetProp(pointer, xmlCharFrom(name))
-        if attributeValue != nil {
-            let result = stringFrom(attributeValue)!
-            free(attributeValue)
-            return result
+        return name.withXmlChar { attrName -> String? in
+            if let attributeValue = xmlGetProp(pointer, attrName) {
+                let result = stringFrom(xmlchar: attributeValue)
+                free(attributeValue)
+                return result
+            }
+            return nil
         }
-        return nil
     }
     
-    /**
-    All attributes and values as dictionary.
+    /// All attributes and values as dictionary.
     
-    :returns: a dictionary which could be empty if there are no attributes. Returns nil if the node is nil
-    */
-    
-    var attributes : Dictionary<String, String>? {
-        var result = Dictionary<String, String>()
-        for var attr = node.properties; attr != nil ; attr = attr.memory.next {
-            let attrData = attr.memory
-            let value = stringFrom(attrData.children.memory.content)
-            let key = stringFrom(attrData.name)!
-            result[key] = value!
+    var attributes : [String:String] {
+        var result = [String:String]()
+        for attribute in XmlAttrSequence(node: node.properties) {
+            if let children = attribute.pointee.children,
+                let name = attribute.pointee.name {
+                let value = stringFrom(xmlchar: children.pointee.content)
+                let key = stringFrom(xmlchar: name)
+                result[key] = value
+            }
         }
-        return (result.count > 0) ? result : nil
+        return result
     }
     
-    /**
-    The tag name.
-    
-    :returns: The tag name or an empty string
-    */
+    /// The tag name.
     
     var tagName : String? {
-        return stringFrom(node.name)
+        guard let nodeName = node.name else { return nil }
+        return stringFrom(xmlchar: nodeName)
     }
     
-    /**
-    The value for the class attribute.
-    */
+    /// The value for the class attribute.
     
     var classValue : String? {
-        return attributeForName(kClassKey)
+        return attribute(for: kClassKey)
     }
     
-    /**
-    The value for the id attribute.
-    */
+    /// The value for the id attribute.
     
     var IDValue : String? {
-        return attributeForName(kIDKey)
+        return attribute(for: kIDKey)
     }
-
-    /**
-    The value for the href attribute.
-    */
+    
+    /// The value for the href attribute.
     
     var hrefValue : String? {
-        return attributeForName("href")
+        return attribute(for: "href")
     }
     
-    /**
-    The value for the src attribute.
-    */
+    /// The value for the src attribute.
     
     var srcValue : String? {
-        return attributeForName("src")
+        return attribute(for: "src")
     }
     
-    /**
-    The integer value.
-    */
+    /// The integer value.
     
     var integerValue : Int? {
-        return self.stringValue?.toInt()
+        guard let string = self.stringValue else { return nil }
+        return Int(string)
     }
     
-    /**
-    The double value.
-    */
+    /// The double value.
     
     var doubleValue : Double? {
-        if let integer = self.integerValue {
-            return Double(integer)
-        }
-        return nil
+        guard let string = self.stringValue else { return nil }
+        return Double(string)
     }
     
-    /**
-    Returns the double value of the string value for a specified locale identifier.
+    /// Returns the double value of the string value for a specified locale identifier considering a plus sign prefix.
+    /// - Parameters:
+    ///   - identifier: A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    ///   - flag: Considers the plus sign in the string if true (optional, default is false).
+    /// - Returns: The double value of the string value depending on the parameters.
     
-    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    
-    :returns: The double value of the string value depending on the parameter.
-    */
-    
-    func doubleValueForLocaleIdentifier(identifier : String) -> Double?
+    func doubleValue(forLocaleIdentifier identifier : String, consideringPlusSign flag : Bool = false) -> Double?
     {
-        return self.stringValue?.doubleValueForLocaleIdentifier(identifier)
+        return self.stringValue?.doubleValue(forLocaleIdentifier: identifier, consideringPlusSign:flag)
     }
     
-    /**
-    Returns the double value of the string value for a specified locale identifier considering a plus sign prefix.
+    /// Returns the double value of the text content for a specified locale identifier considering a plus sign prefix.
+    /// - Parameters:
+    ///   - identifier: A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    ///   - flag: Considers the plus sign in the string if true (optional, default is false).
+    /// - Returns: The double value of the text content depending on the parameters.
     
-    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    
-    :param: flag Considers the plus sign in the string if YES.
-    
-    :returns: The double value of the string value depending on the parameters.
-    */
-    
-    func doubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag : Bool) -> Double?
+    func contentDoubleValue(forLocaleIdentifier identifier : String, consideringPlusSign flag : Bool = false) -> Double?
     {
-        return self.stringValue?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        return self.textContent?.doubleValue(forLocaleIdentifier: identifier, consideringPlusSign:flag)
     }
     
-    /**
-    Returns the double value of the text content for a specified locale identifier.
+    /// Returns the date value of the string value for a specified date format and time zone.
+    /// - Parameters:
+    ///   - format: A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    ///   - timeZone: A time zone (optional, default is current time zone).
+    /// - Returns: The date value of the string value depending on the parameters.
     
-    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    
-    :returns: The double value of the text content depending on the parameter.
-    */
-    
-    func contentDoubleValueForLocaleIdentifier(identifier : String) -> Double?
+    func dateValue(withFormat format : String, timeZone : TimeZone? = nil) -> Date? // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
     {
-        return self.textContent?.doubleValueForLocaleIdentifier(identifier)
+        return self.stringValue?.dateValue(withFormat : format, timeZone : timeZone)
     }
     
-    /**
-    Returns the double value of the text content for a specified locale identifier considering a plus sign prefix.
+    /// Returns the date value of the text content for a specified date format and time zone.
+    /// - Parameters:
+    ///   - format: A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
+    ///   - timeZone: A time zone (optional, default is current time zone).
+    /// - Returns: The date value of the text content depending on the parameters.
     
-    :param: identifier A locale identifier. The locale identifier must conform to http://www.iso.org/iso/country_names_and_code_elements and http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    
-    :param: flag Considers the plus sign in the string if YES.
-    
-    :returns: The double value of the text content depending on the parameters.
-    */
-    
-    func contentDoubleValueForLocaleIdentifier(identifier : String, consideringPlusSign flag: Bool) -> Double?
+    func contentDateValue(withFormat format : String, timeZone : TimeZone? = nil) -> Date?
     {
-        return self.textContent?.doubleValueForLocaleIdentifier(identifier, consideringPlusSign:flag)
+        return self.textContent?.dateValue(withFormat: format, timeZone:timeZone)
     }
     
-    /**
-    Returns the date value of the string value for a specified date format and time zone.
-    
-    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    
-    :param: timeZone A time zone.
-    
-    :returns: The date value of the string value depending on the parameters.
-    */
-    
-    // date format e.g. @"yyyy-MM-dd 'at' HH:mm" --> 2001-01-02 at 13:00
-    func dateValueForFormat(dateFormat: String, timeZone: NSTimeZone) -> NSDate?
-    {
-        return self.stringValue?.dateValueWithFormat(dateFormat, timeZone:timeZone)
-    }
-    
-    /**
-    Returns the date value of the text content for a specified date format and time zone.
-    
-    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    
-    :param: timeZone A time zone.
-    
-    :returns: The date value of the text content depending on the parameters.
-    */
-    
-    func contentDateValueForFormat(dateFormat: String, timeZone: NSTimeZone) -> NSDate?
-    {
-        return self.textContent?.dateValueWithFormat(dateFormat, timeZone:timeZone)
-    }
-    
-    /**
-    Returns the date value of the string value for a specified date format.
-    
-    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    
-    :returns: The date value of the string value depending on the parameter.
-    */
-    
-    func dateValueForFormat(dateFormat: String) -> NSDate?
-    {
-        return dateValueForFormat(dateFormat, timeZone:NSTimeZone.systemTimeZone())
-    }
-    
-    
-    /**
-    Returns the date value of the text content for a specified date format.
-    
-    :param: dateFormat A date format string. The date format must conform to http://unicode.org/reports/tr35/tr35-10.html#Date_Format_Patterns
-    
-    :returns: The date value of the text content depending on the parameter.
-    */
-    
-    func contentDateValueForFormat(dateFormat: String) -> NSDate?
-    {
-        return self.contentDateValueForFormat(dateFormat, timeZone:NSTimeZone.systemTimeZone())
-    }
-    
-    /**
-    The raw string.
-    
-    :returns: The raw string value or an empty string.
-    */
+    /// The raw string.
     
     var rawStringValue : String? {
-        if node.children.hashValue != 0 {
-            return stringFrom(node.children.memory.content)
-        }
-        return nil
+        guard let content = node.children.pointee.content else { return nil }
+        return stringFrom(xmlchar: content)
     }
     
-    /**
-    The string value of a node trimmed by whitespace and newline characters.
-    
-    :returns: The string value or an empty string.
-    */
+    /// The string value of a node trimmed by whitespace and newline characters.
     
     var stringValue : String? {
-        return self.rawStringValue?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return self.rawStringValue?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
-    /**
-    The string value of a node trimmed by whitespace and newline characters and collapsing all multiple occurrences of whitespace and newline characters within the string into a single space.
-    
-    :returns: The trimmed and collapsed string value or an empty string.
-    */
+    /// The string value of a node trimmed by whitespace and newline characters and collapsing all multiple occurrences of whitespace and newline characters within the string into a single space.
     
     var stringValueCollapsingWhitespace : String? {
         return self.stringValue?.collapseWhitespaceAndNewLine()
     }
     
-    /**
-    The raw html text dump.
-    
-    :returns: The raw html text dump or an empty string.
-    */
+    /// The raw html text dump.
     
     var HTMLString : String? {
         var result : String?
         
-        var buffer : xmlBufferPtr = xmlBufferCreate()
-        if buffer != nil {
+        if let buffer = xmlBufferCreate() {
             let err : Int32 = xmlNodeDump(buffer, nil, pointer, 0, 0)
             if err > -1 {
-                result = stringFrom(buffer.memory.content)!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+                result = stringFrom(xmlchar: buffer.pointee.content).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             }
             xmlBufferFree(buffer)
         }
         return result
     }
     
-    private func textContentOfChildren(nodePtr : xmlNodePtr, inout array : Array<String>, recursive : Bool)
+    private func textContentOfChildren(nodePtr : xmlNodePtr,
+                                       array : inout Array<String>,
+                                       recursive : Bool)
     {
-        for var currentNode = nodePtr; currentNode != nil; currentNode = currentNode.memory.next {
-            
-            if let content = textContent(currentNode) {
-                if content.isEmpty {
-                    array.append(content)
-                } else {
-                    let trimmedContent = content.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-                    if trimmedContent.isEmpty == false {
-                        array.append(trimmedContent)
-                    }
+        for currentNode in XmlNodeSequence(node: nodePtr) {
+            if let content = textContent(of: currentNode), !content.isEmpty {
+                let trimmedContent = content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                if !trimmedContent.isEmpty {
+                    array.append(trimmedContent)
                 }
             }
             
             if recursive {
-                textContentOfChildren(currentNode.memory.children, array: &array, recursive: recursive)
+                textContentOfChildren(nodePtr: currentNode.pointee.children, array: &array, recursive: recursive)
             }
         }
     }
     
-    /**
-    The element type of the node.
-    */
+    /// The element type of the node.
     
-    var elementType : String? {
-        let rawType = xmlElementTypeToInt(node.type)
-        if let nodeType = XMLElementType(rawValue:rawType) {
+    var elementType : String {
+        switch node.type.rawValue {
             
-            switch nodeType {
-                
-            case .ELEMENT_NODE: return "Element"
-            case .ATTRIBUTE_NODE: return "Attribute"
-            case .TEXT_NODE: return "Text"
-            case .CDATA_SECTION_NODE: return "CData Section"
-            case .ENTITY_REF_NODE: return "Entity Ref"
-            case .ENTITY_NODE: return "Entity"
-            case .PI_NODE: return "Pi"
-            case .COMMENT_NODE: return "Comment"
-            case .DOCUMENT_NODE: return "Document"
-            case .DOCUMENT_TYPE_NODE: return "Document Type"
-            case .DOCUMENT_FRAG_NODE: return "Document Frag"
-            case .NOTATION_NODE: return "Notation"
-            case .HTML_DOCUMENT_NODE: return "HTML Document"
-            case .DTD_NODE: return "DTD"
-            case .ELEMENT_DECL: return "Element Declaration"
-            case .ATTRIBUTE_DECL: return "Attribute Declaration"
-            case .ENTITY_DECL: return "Entity Declaration"
-            case .NAMESPACE_DECL: return "Namespace Declaration"
-            case .XINCLUDE_START: return "Xinclude Start"
-            case .XINCLUDE_END: return "Xinclude End"
-            case .DOCB_DOCUMENT_NODE: return "DOCD Document"
-            }
+        case 1: return "Element"
+        case 2: return "Attribute"
+        case 3: return "Text"
+        case 4: return "CData Section"
+        case 5: return "Entity Ref"
+        case 6: return "Entity"
+        case 7: return "Pi"
+        case 8: return "Comment"
+        case 9: return "Document"
+        case 10: return "Document Type"
+        case 11: return "Document Frag"
+        case 12: return "Notation"
+        case 13: return "HTML Document"
+        case 14: return "DTD"
+        case 15: return "Element Declaration"
+        case 16: return "Attribute Declaration"
+        case 17: return "Entity Declaration"
+        case 18: return "Namespace Declaration"
+        case 19: return "Xinclude Start"
+        case 20: return "Xinclude End"
+        case 21: return "DOCD Document"
+        default: return "n/a"
         }
-        return nil
     }
     
-    /**
-    Is the node an attribute node.
+    /// Is the node an attribute node.
     
-    :returns: Boolean value or  nil if the node doesn't exist.
-    */
-    
-    var isAttributeNode : Bool? {
-        return xmlElementTypeToInt(node.type) == XMLElementType.ATTRIBUTE_NODE.rawValue
+    var isAttributeNode : Bool {
+        return node.type.rawValue == XMLElementType.ATTRIBUTE_NODE.rawValue
     }
     
-    /**
-    Is the node a document node.
+    /// Is the node a document node.
     
-    :returns: Boolean value or  nil if the node doesn't exist.
-    */
-    
-    var isDocumentNode : Bool? {
-        return xmlElementTypeToInt(node.type) == XMLElementType.HTML_DOCUMENT_NODE.rawValue
+    var isDocumentNode : Bool {
+        return node.type.rawValue == XMLElementType.HTML_DOCUMENT_NODE.rawValue
     }
     
-    /**
-    Is the node an element node.
+    /// Is the node an element node.
     
-    :returns: Boolean value or  nil if the node doesn't exist.
-    */
-    
-    var isElementNode : Bool? {
-        return xmlElementTypeToInt(node.type) == XMLElementType.ELEMENT_NODE.rawValue
+    var isElementNode : Bool {
+        return node.type.rawValue == XMLElementType.ELEMENT_NODE.rawValue
     }
     
-    /**
-    Is the node a text node.
+    /// Is the node a text node.
     
-    :returns: Boolean value or  nil if the node doesn't exist.
-    */
-    
-    var isTextNode : Bool? {
-        return xmlElementTypeToInt(node.type) == XMLElementType.TEXT_NODE.rawValue
+    var isTextNode : Bool {
+        return node.type.rawValue == XMLElementType.TEXT_NODE.rawValue
     }
     
-    /**
-    The array of all text content of children.
+    /// The array of all text content of children.
     
-    :returns: The text content array - each array item is trimmed by whitespace and newline characters - or an empty array.
-    */
-    
-    var textContentOfChildren : Array<String> {
-        var array = Array<String>()
-        textContentOfChildren(node.children, array:&array, recursive:false)
+    var textContentOfChildren : [String] {
+        var array = [String] ()
+        textContentOfChildren(nodePtr: node.children, array:&array, recursive:false)
         return array
     }
     
     
     // MARK: - attributes and values of current node and its descendants (descendant-or-self)
     
-    private func textContent(nodePtr : xmlNodePtr) -> String?
+    private func textContent(of nodePtr : xmlNodePtr) -> String?
     {
-        let contents = xmlNodeGetContent(nodePtr)
-        
-        if contents != nil {
-            let string = String.fromCString(UnsafePointer<CChar>(contents))
-            free(contents)
-            return string!
+        if let contents = xmlNodeGetContent(nodePtr) {
+            defer { free(contents) }
+            return stringFrom(xmlchar: contents)
         }
-        
         return nil
     }
     
-    /**
-    The raw text content of descendant-or-self.
-    
-    :returns: The raw text content of the node and all its descendants or an empty string.
-    */
+    /// The raw text content of descendant-or-self.
     
     var rawTextContent : String? {
-        return textContent(pointer)
+        return textContent(of: pointer)
     }
     
-    /**
-    The text content of descendant-or-self trimmed by whitespace and newline characters.
-    
-    :returns: The trimmed text content of the node and all its descendants or an empty string.
-    */
+    /// The text content of descendant-or-self trimmed by whitespace and newline characters.
     
     var textContent : String? {
-        return textContent(pointer)?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return textContent(of: pointer)?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
-    /**
-    The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
-    
-    :returns: An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string.
-    */
+    /// The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
     
     var textContentCollapsingWhitespace : String? {
         return self.textContent?.collapseWhitespaceAndNewLine()
     }
     
-    /**
-    The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
+    /// The text content of descendant-or-self in an array, each item trimmed by whitespace and newline characters.
     
-    :returns: An array of all text content of the node and its descendants - each array item is trimmed by whitespace and newline characters - or an empty string.
-    */
-    
-    var textContentOfDescendants : Array<String> {
+    var textContentOfDescendants : [String] {
         var array = Array<String>()
-        textContentOfChildren(node.children, array:&array, recursive:true)
+        textContentOfChildren(nodePtr: node.children, array:&array, recursive:true)
         return array
     }
     
-    /**
-    The raw html text dump of descendant-or-self.
-    
-    :returns: The raw html text dump of the node and all its descendants or an empty string.
-    */
+    /// The raw html text dump of descendant-or-self.
     
     var HTMLContent : String?  {
-        var result : String?
-        var xmlBuffer = xmlBufferCreateSize(DUMP_BUFFER_SIZE)
-        var outputBuffer : xmlOutputBufferPtr = xmlOutputBufferCreateBuffer(xmlBuffer, nil)
         
-        let document = node.doc
-        let xmlCharContent = document.memory.encoding
-        let contentAddress = unsafeBitCast(xmlCharContent, UnsafePointer<xmlChar>.self)
-        let constChar = UnsafePointer<Int8>(contentAddress)
+        guard let document = node.doc else { return nil }
+        let xmlCharContent = document.pointee.encoding!
         
-        htmlNodeDumpOutput(outputBuffer, document, self.pointer!, constChar)
-        xmlOutputBufferFlush(outputBuffer)
+        var xmlBuffer = xmlBufferCreateSize(dumpBufferSize)
+        var outputBuffer = xmlOutputBufferCreateBuffer(xmlBuffer, nil)
         
-        if xmlBuffer.memory.content != nil {
-            result = stringFrom(xmlBuffer.memory.content)
+        defer {
+            xmlOutputBufferClose(outputBuffer)
+            xmlBufferFree(xmlBuffer)
         }
         
-        xmlOutputBufferClose(outputBuffer)
-        xmlBufferFree(xmlBuffer)
+        let constChar = xmlCharContent.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: xmlCharContent)) {
+            return $0
+        }
         
-        return result
+        htmlNodeDumpOutput(outputBuffer, document, self.pointer, constChar)
+        xmlOutputBufferFlush(outputBuffer)
+        
+        guard let content = xmlBuffer?.pointee.content else { return nil }
+        return stringFrom(xmlchar: content)
     }
     
     
@@ -712,125 +531,129 @@ extension NSString {
     // Note: In the category HTMLNode+XPath all appropriate query methods begin with node instead of descendant
     
     
-    private func childWithAttribute(attrName : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(withAttribute attribute : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
             
-            if recursive {
-                if let subNode = childWithAttribute(attrName, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
-                    return subNode
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(withAttribute: attribute, nodePtr: children, recursive: recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    private func childWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(withAttribute attribute : UnsafePointer<xmlChar>,
+                       matches value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        // if xmlStrstr(attrValue, "output") != nil { println(stringFrom(attrValue)) }
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
-                    if xmlStrEqual(attr.memory.children.memory.content, attrValue) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
+                    if xmlStrEqual(attr.pointee.children.pointee.content, value) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
-            if (recursive) {
-                if let subNode = childWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
-                    return subNode
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(withAttribute: attribute, matches: value, nodePtr: children, recursive: recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    private func childWithAttributeValueContains(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(withAttribute attribute : UnsafePointer<xmlChar>,
+                       contains value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        // if xmlStrstr(attrValue, "output") != nil { println(stringFrom(attrValue)) }
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    if xmlStrstr(attr.memory.children.memory.content, attrValue) != nil {
+                    if xmlStrstr(attr.pointee.children.pointee.content, value) != nil {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
-            if (recursive) {
-                if let subNode = childWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
-                    return subNode
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(withAttribute: attribute, contains: value, nodePtr: children, recursive: recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    private func childWithAttributeValueBeginsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(withAttribute attribute : UnsafePointer<xmlChar>,
+                       beginsWith value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    let subString = xmlStrsub(attr.memory.children.memory.content, 0, xmlStrlen(attrValue))
-                    if xmlStrEqual(subString, attrValue) == 1 {
+                    let subString = xmlStrsub(attr.pointee.children.pointee.content, 0, xmlStrlen(value))
+                    if xmlStrEqual(subString, value) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
-            if (recursive) {
-                if let subNode = childWithAttributeValueBeginsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
-                    return subNode
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(withAttribute: attribute, beginsWith: value, nodePtr: children, recursive: recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    private func childWithAttributeValueEndsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(withAttribute attribute : UnsafePointer<xmlChar>,
+                       endsWith value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    let attrContent = attr.memory.children.memory.content
-                    let addValueLength = xmlStrlen(attrValue)
+                    let attrContent = attr.pointee.children.pointee.content
+                    let addValueLength = xmlStrlen(value)
                     let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
-                    if xmlStrEqual(subString, attrValue) == 1 {
+                    if xmlStrEqual(subString, value) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
             }
             
-            if (recursive) {
-                if let subNode = childWithAttributeValueEndsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, recursive: recursive) {
-                    return subNode
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(withAttribute: attribute, endsWith: value, nodePtr: children, recursive: recursive) {
+                return subNode
             }
         }
         return nil
     }
     
     
-    private func childrenWithAttribute(attrName : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(withAttribute attribute : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if attrName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                         break
@@ -838,21 +661,23 @@ extension NSString {
                 }
             }
             
-            if (recursive)  {
-                childrenWithAttribute(attrName, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(withAttribute: attribute, nodePtr: childrn, array:&array, recursive:recursive)
             }
         }
     }
     
-    private func childrenWithAttributeValueMatches(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(withAttribute attribute : UnsafePointer<xmlChar>,
+                          matches value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if attrName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    if xmlStrEqual(attr.memory.children.memory.content, attrValue) == 1 {
+                    if xmlStrEqual(attr.pointee.children.pointee.content, value) == 1 {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -861,22 +686,23 @@ extension NSString {
                 }
             }
             
-            if (recursive)  {
-                childrenWithAttributeValueMatches(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(withAttribute: attribute, matches: value, nodePtr: childrn, array:&array, recursive:recursive)
             }
         }
     }
     
-    private func childrenWithAttributeValueContains(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(withAttribute attribute : UnsafePointer<xmlChar>,
+                          contains value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if attrName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    if xmlStrstr(attr.memory.children.memory.content, attrValue) != nil {
+                    if xmlStrstr(attr.pointee.children.pointee.content, value) != nil {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -885,23 +711,24 @@ extension NSString {
                 }
             }
             
-            if (recursive)  {
-                childrenWithAttributeValueContains(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(withAttribute: attribute, contains:value, nodePtr: childrn, array:&array, recursive:recursive)
             }
         }
     }
     
-    private func childrenWithAttributeValueBeginsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(withAttribute attribute : UnsafePointer<xmlChar>,
+                          beginsWith value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if attrName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    let subString = xmlStrsub(attr.memory.children.memory.content, 0, xmlStrlen(attrValue))
-                    if xmlStrEqual(subString, attrValue) == 1 {
+                    let subString = xmlStrsub(attr.pointee.children.pointee.content, 0, xmlStrlen(value))
+                    if xmlStrEqual(subString, value) == 1 {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -910,25 +737,26 @@ extension NSString {
                 }
             }
             
-            if (recursive)  {
-                childrenWithAttributeValueBeginsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(withAttribute: attribute, beginsWith: value, nodePtr: childrn, array:&array, recursive:recursive)
             }
         }
     }
     
-    private func childrenWithAttributeValueEndsWith(attrName : UnsafePointer<xmlChar>, attrValue : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(withAttribute attribute : UnsafePointer<xmlChar>,
+                          endsWith value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if attrName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            
-            for var attr = currentNodePtr.memory.properties; attr != nil ; attr = attr.memory.next {
-                if xmlStrEqual(attr.memory.name, attrName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
+                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
                     
-                    let attrContent = attr.memory.children.memory.content
-                    let addValueLength = xmlStrlen(attrValue)
+                    let attrContent = attr.pointee.children.pointee.content
+                    let addValueLength = xmlStrlen(value)
                     let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
-                    if xmlStrEqual(subString, attrValue) == 1 {
+                    if xmlStrEqual(subString, value) == 1 {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -937,1078 +765,1028 @@ extension NSString {
                 }
             }
             
-            if (recursive)  {
-                childrenWithAttributeValueEndsWith(attrName, attrValue:attrValue, nodePtr: currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(withAttribute: attribute, endsWith: value, nodePtr: childrn, array:&array, recursive:recursive)
             }
         }
     }
     
     
-    /**
-    Returns the first descendant node with the specifed attribute name and value matching exactly.
+    /// Returns the first descendant node with the specifed attribute name and value matching exactly.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
-    
-    func descendantWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
+    func descendant(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed attribute name and value matching exactly.
+    /// Returns the first child node with the specifed attribute name and value matching exactly.
+    ///   - attributeName The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
+    func child(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
-        
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed attribute name and value matching exactly.
+    /// Returns the first sibling node with the specifed attribute name and value matching exactly.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingWithAttribute(attributeName : String, valueMatches attributeValue: String) -> HTMLNode?
+    func sibling(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns the first descendant node with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
-    
-    func descendantWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
+    func descendant(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
-        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns the first child node with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
+    func child(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
-        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns the first sibling node with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingWithAttribute(attributeName : String, valueContains attributeValue: String) -> HTMLNode?
+    func sibling(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
-        return childWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first descendant node with the specifed attribute name and value begins with the specified attribute value.
-    
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
+    /// Returns the first descendant node with the specifed attribute name and value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
     
-    func descendantWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    func descendant(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed attribute name and value begins with the specified attribute value.
+    /// Returns the first child node with the specifed attribute name and value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    func child(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value.
+    /// Returns the first sibling node with the specifed attribute name and the value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> HTMLNode?
+    func sibling(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first descendant node with the specifed attribute name and value ends with the specified attribute value.
-    
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
+    /// Returns the first descendant node with the specifed attribute name and value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
     
-    func descendantWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    func descendant(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: true)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed attribute name and value ends with the specified attribute value.
+    /// Returns the first child node with the specifed attribute name and value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    func child(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value.
+    /// Returns the first sibling node with the specifed attribute name and the value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> HTMLNode?
+    func sibling(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
-        return childWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name and value matching exactly.
+    /// Returns all descendant nodes with the specifed attribute name and value matching exactly.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
+    func descendants(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name and value matching exactly.
+    /// Returns all child nodes with the specifed attribute name and value matching exactly.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
+    func children(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name and value matching exactly.
+    /// Returns all sibling nodes with the specifed attribute name and value matching exactly.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The value of the attribute.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The value of the attribute.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsWithAttribute(attributeName : String, valueMatches attributeValue: String) -> Array<HTMLNode>
+    func siblings(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueMatches(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.next, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns all descendant nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
+    func descendants(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns all child nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
+    func children(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// Returns all sibling nodes with the specifed attribute name and the value contains the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsWithAttribute(attributeName : String, valueContains attributeValue: String) -> Array<HTMLNode>
+    func siblings(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueContains(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.next, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// Returns all descendant nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    func descendants(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// Returns all child nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    func children(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, array:&array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// Returns all sibling nodes with the specifed attribute name and the value begins with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute
+    ///   - value: The partial string of the attribute value
+    /// - Returns: The array of all found sibling nodes or an empty array
     
-    :param: attributeName The name of the attribute
-    :param: attributeValue The partial string of the attribute value
-    :returns: The array of all found sibling nodes or an empty array
-    */
-    
-    func siblingsWithAttribute(attributeName : String, valueBeginsWith attributeValue: String) -> Array<HTMLNode>
+    func siblings(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
-        
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueBeginsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.next, array:&array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// Returns all descendant nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    func descendants(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: true)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, array:&array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// Returns all child nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    func children(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.children, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, array:&array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// Returns all sibling nodes with the specifed attribute name and the value ends with the specified attribute value.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :param: attributeValue The partial string of the attribute value.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsWithAttribute(attributeName : String, valueEndsWith attributeValue: String) -> Array<HTMLNode>
+    func siblings(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttributeValueEndsWith(xmlCharFrom(attributeName), attrValue:xmlCharFrom(attributeValue), nodePtr: node.next, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            value.withXmlChar { xmlValue in
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.next, array:&array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns the first descendant node with the specifed attribute name.
+    /// Returns the first descendant node with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The first found descendant node or nil.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The first found descendant node or nil.
-    */
-    
-    func descendantWithAttribute(attributeName : String) -> HTMLNode?
+    func descendant(withAttribute attribute : String) -> HTMLNode?
     {
-        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: true)
+        return attribute.withXmlChar { xmlAttr in
+            return child(withAttribute: xmlAttr, nodePtr: node.children, recursive: true)
+        }
     }
     
-    /**
-    Returns the first child node with the specifed attribute name.
+    /// Returns the first child node with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The first found child node or nil.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The first found child node or nil.
-    */
-    
-    func childWithAttribute(attributeName : String) -> HTMLNode?
+    func child(withAttribute attribute : String) -> HTMLNode?
     {
-        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            return child(withAttribute: xmlAttr, nodePtr: node.children, recursive: false)
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed attribute name.
+    /// Returns the first sibling node with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The first found sibling node or nil.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The first found sibling node or nil.
-    */
-    
-    func siblingWithAttribute(attributeName : String) -> HTMLNode?
+    func sibling(withAttribute attribute : String) -> HTMLNode?
     {
-        return childWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, recursive: false)
+        return attribute.withXmlChar { xmlAttr in
+            return child(withAttribute: xmlAttr, nodePtr: node.next, recursive: false)
+        }
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name.
+    /// Returns all descendant nodes with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithAttribute(attributeName : String) -> Array<HTMLNode>
+    func descendants(withAttribute attribute : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: true)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            children(withAttribute: xmlAttr, nodePtr: node.children, array:&array, recursive: true)
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name.
+    /// Returns all child nodes with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithAttribute(attributeName : String) -> Array<HTMLNode>
+    func children(withAttribute attribute : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.children, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            children(withAttribute: xmlAttr, nodePtr: node.children, array:&array, recursive: false)
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name.
+    /// Returns all sibling nodes with the specifed attribute name.
+    /// - Parameters:
+    ///   - attributeName: The name of the attribute.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: attributeName The name of the attribute.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsWithAttribute(attributeName : String) -> Array<HTMLNode>
+    func siblings(withAttribute attribute : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenWithAttribute(xmlCharFrom(attributeName), nodePtr: node.next, array:&array, recursive: false)
+        var array = [HTMLNode]()
+        attribute.withXmlChar { xmlAttr in
+            children(withAttribute: xmlAttr, nodePtr: node.next, array:&array, recursive: false)
+        }
         return array
     }
     
-    /**
-    Returns the first descendant node with the specifed class value.
+    /// Returns the first descendant node with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found descendant node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found descendant node or nil.
-    */
-    
-    func descendantWithClass(value : String) -> HTMLNode?
+    func descendant(withClass value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
+        return kClassKey.withXmlChar { xmlClass in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed class value.
+    /// Returns the first child node with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found child node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found child node or nil.
-    */
-    
-    func childWithClass(value : String) -> HTMLNode?
+    func child(withClass value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
+        return kClassKey.withXmlChar { xmlClass in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed class value.
+    /// Returns the first sibling node with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found sibling node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found sibling node or nil.
-    */
-    
-    func siblingWithClass(value : String) -> HTMLNode?
+    func sibling(withClass value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kClassKey), attrValue:xmlCharFrom(value), nodePtr: node.next, recursive: false)
+        return kClassKey.withXmlChar { xmlClass in
+            value.withXmlChar { xmlValue in
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns all descendant nodes with the specifed class value.
+    /// Returns all descendant nodes with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: classValue The name of the class.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsWithClass(value : String) -> Array<HTMLNode>
+    func descendants(withClass value : String) -> [HTMLNode]
     {
-        return self.descendantsWithAttribute(kClassKey, valueMatches:value)
+        return self.descendants(withAttribute: kClassKey, matches: value)
     }
     
-    /**
-    Returns all child nodes with the specifed class value.
+    /// Returns all child nodes with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: classValue The name of the class.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenWithClass(value : String) -> Array<HTMLNode>
+    func children(withClass value : String) -> [HTMLNode]
     {
-        return self.childrenWithAttribute(kClassKey, valueMatches:value)
+        return self.children(withAttribute: kClassKey, matches: value)
     }
     
-    /**
-    Returns all sibling nodes with the specifed class value.
+    /// Returns all sibling nodes with the specifed class value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: classValue The name of the class.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsWithClass(value : String) -> Array<HTMLNode>
+    func siblings(withClass value : String) -> [HTMLNode]
     {
-        return self.siblingsWithAttribute(kClassKey, valueMatches:value)
+        return self.siblings(withAttribute: kClassKey, matches: value)
     }
     
-    /**
-    Returns the first descendant node with the specifed id value.
+    /// Returns the first descendant node with the specifed id value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found descendant node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found descendant node or nil.
-    */
-    
-    func descendantWithID(value : String) -> HTMLNode?
+    func descendant(withID value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: true)
+        return kIDKey.withXmlChar { xmlID in
+            value.withXmlChar { xmlValue in
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
     }
     
-    /**
-    Returns the first child node with the specifed id value.
+    /// Returns the first child node with the specifed id value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found child node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found child node or nil.
-    */
-    
-    func childWithID(value : String) -> HTMLNode?
+    func child(withID value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.children, recursive: false)
+        return kIDKey.withXmlChar { xmlID in
+            value.withXmlChar { xmlValue in
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed id value.
+    /// Returns the first sibling node with the specifed id value.
+    /// - Parameters:
+    ///   - value: The name of the class.
+    /// - Returns: The first found sibling node or nil.
     
-    :param: classValue The name of the class.
-    
-    :returns: The first found sibling node or nil.
-    */
-    
-    func siblingWithID(value : String) -> HTMLNode?
+    func sibling(withID value : String) -> HTMLNode?
     {
-        return childWithAttributeValueMatches(xmlCharFrom(kIDKey), attrValue:xmlCharFrom(value), nodePtr: node.next, recursive: false)
+        return kIDKey.withXmlChar { xmlID in
+            value.withXmlChar { xmlValue in
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
-
     
-    private func childOfTagValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    
+    private func child(ofTag tag : UnsafePointer<xmlChar>,
+                       matches value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
-                let childNodePtr = currentNodePtr.memory.children
-                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
+                let childNodePtr = currentNodePtr.pointee.children
+                let childContent = (childNodePtr != nil) ? childNodePtr!.pointee.content : nil
                 if childContent != nil && xmlStrEqual(childContent, value) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
-            if recursive {
-                if let subNode = childOfTagValueMatches(tagName, value:value, nodePtr: currentNodePtr.memory.children, recursive:recursive) {
-                    return subNode
-                    
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(ofTag: tag, matches: value, nodePtr: children, recursive:recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    private func childOfTagValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, recursive : Bool) -> HTMLNode?
+    private func child(ofTag tag : UnsafePointer<xmlChar>,
+                       contains value : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool) -> HTMLNode?
     {
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
-                let childNodePtr = currentNodePtr.memory.children
-                let childContent = (childNodePtr != nil) ? childNodePtr.memory.content : nil
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
+                let childNodePtr = currentNodePtr.pointee.children
+                let childContent = (childNodePtr != nil) ? childNodePtr!.pointee.content : nil
                 if childContent != nil  && xmlStrstr(childContent, value) != nil {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
-            if recursive {
-                if let subNode = childOfTagValueContains(tagName, value:value, nodePtr: currentNodePtr.memory.children, recursive:recursive) {
-                    return subNode
-                    
-                }
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(ofTag: tag, contains: value, nodePtr: children, recursive:recursive) {
+                return subNode
             }
         }
         return nil
     }
     
-    /**
-    Returns the first descendant node with the specifed tag name and string value matching exactly.
+    /// Returns the first descendant node with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
-    
-    func descendantOfTag(tagName : String, valueMatches: String) -> HTMLNode?
+    func descendant(ofTag tag : String, matches value : String) -> HTMLNode?
     {
-        return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches),  nodePtr:node.children, recursive:true)
-    }
-    
-    /**
-    Returns the first child node with the specifed tag name and string value matching exactly.
-    
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childOfTag(tagName : String, valueMatches: String) -> HTMLNode?
-    {
-        return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, recursive:false)
-    }
-    
-    /**
-    Returns the first sibling node with the specifed tag name and string value matching exactly.
-    
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingOfTag(tagName : String, valueMatches: String) -> HTMLNode?
-    {
-        if let node = self.node {
-            return childOfTagValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.next, recursive:false)
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+               return child(ofTag: xmlTag, matches: xmlValue,  nodePtr: node.children, recursive: true)
+            }
         }
-        return nil
     }
     
-    /**
-    Returns the first descendant node with the specifed attribute name and the string value contains the specified value.
+    /// Returns the first child node with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The first found descendant node or nil if no node matches the parameters.
-    */
-    
-    func descendantOfTag(tagName : String, valueContains: String) -> HTMLNode?
+    func child(ofTag tag : String, matches value : String) -> HTMLNode?
     {
-        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:true)
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the child node with the specifed attribute name and the string value contains the specified value.
+    /// Returns the first sibling node with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The first found child node or nil if no node matches the parameters.
-    */
-    
-    func childOfTag(tagName : String, valueContains: String) -> HTMLNode?
+    func sibling(ofTag tag : String, matches value : String) -> HTMLNode?
     {
-        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.children, recursive:false)
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: node.next, recursive: false)
+            }
+        }
     }
     
-    /**
-    Returns the sibling node with the specifed attribute name and the string value contains the specified value.
+    /// Returns the first descendant node with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found descendant node or nil if no node matches the parameters.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The first found sibling node or nil if no node matches the parameters.
-    */
-    
-    func siblingOfTag(tagName : String, valueContains: String) -> HTMLNode?
+    func descendant(ofTag tag : String, contains value : String) -> HTMLNode?
     {
-        return childOfTagValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains), nodePtr:node.next, recursive:false)
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: node.children, recursive: true)
+            }
+        }
+    }
+    
+    /// Returns the child node with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found child node or nil if no node matches the parameters.
+    
+    func child(ofTag tag : String, contains value : String) -> HTMLNode?
+    {
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: node.children, recursive: false)
+            }
+        }
+    }
+    
+    /// Returns the sibling node with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The first found sibling node or nil if no node matches the parameters.
+    
+    func sibling(ofTag tag : String, contains value : String) -> HTMLNode?
+    {
+        return tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr:node.next, recursive: false)
+            }
+        }
     }
     
     
-    private func childrenOfTagStringValueMatches(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(ofTag tag : UnsafePointer<xmlChar>,
+                          matches value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if tagName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
-                if xmlStrEqual(currentNodePtr.memory.children.memory.content, value) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
+                if xmlStrEqual(currentNodePtr.pointee.children.pointee.content, value) == 1 {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                     }
                 }
             }
-            if (recursive) {
-                childrenOfTagStringValueMatches(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(ofTag:tag, matches: value, nodePtr: childrn, array: &array, recursive: recursive)
             }
         }
     }
     
-    private func childrenOfTagStringValueContains(tagName : UnsafePointer<xmlChar>, value : UnsafePointer<xmlChar>, nodePtr: xmlNodePtr, inout array : Array<HTMLNode>, recursive : Bool)
+    private func children(ofTag tag : UnsafePointer<xmlChar>,
+                          contains value : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if tagName == nil { return }
-        
-        for var currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            if xmlStrEqual(currentNodePtr.memory.name, tagName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
                 
-                if xmlStrstr(currentNodePtr.memory.children.memory.content, value) != nil {
+                if xmlStrstr(currentNodePtr.pointee.children.pointee.content, value) != nil {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                     }
                 }
             }
-            if (recursive) {
-                childrenOfTagStringValueContains(tagName, value:value, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(ofTag: tag, contains: value, nodePtr: childrn, array: &array, recursive: recursive)
             }
         }
     }
     
-    /**
-    Returns all descendant nodes with the specifed tag name and string value matching exactly.
+    /// Returns all descendant nodes with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
+    func descendants(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:true)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.children, array: &array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed tag name and string value matching exactly.
+    /// Returns all child nodes with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
+    func children(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.children, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                 children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.children, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed tag name and string value matching exactly.
+    /// Returns all sibling nodes with the specifed tag name and string value matching exactly.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    ///   - value: The string value of the tag.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :param: value The string value of the tag.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsOfTag(tagName : String, valueMatches: String) -> Array<HTMLNode>
+    func siblings(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueMatches(xmlCharFrom(tagName), value:xmlCharFrom(valueMatches), nodePtr:node.next, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.next, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all descendant nodes with the specifed attribute name and the string value contains the specified value.
+    /// Returns all descendant nodes with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
+    func descendants(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:true)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                children(ofTag: xmlTag, contains: xmlValue,  nodePtr:node.children, array: &array, recursive: true)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed attribute name and the string value contains the specified value.
+    /// Returns all child nodes with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
+    func children(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.children, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                 children(ofTag:xmlTag, contains: xmlValue,  nodePtr:node.children, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed attribute name and the string value contains the specified value.
+    /// Returns all sibling nodes with the specifed attribute name and the string value contains the specified value.
+    /// - Parameters:
+    ///   - tag: The name of the attribute.
+    ///   - value: The partial string of the attribute value.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: tagName The name of the attribute.
-    
-    :param: value The partial string of the attribute value.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siblingsOfTag(tagName : String, valueContains: String) -> Array<HTMLNode>
+    func siblings(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTagStringValueContains(xmlCharFrom(tagName), value:xmlCharFrom(valueContains),  nodePtr:node.next, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            value.withXmlChar { xmlValue in
+                children(ofTag: xmlTag, contains: xmlValue,  nodePtr:node.next, array: &array, recursive: false)
+            }
+        }
         return array
     }
     
     
     
-    private func childOfTag(tagName : UnsafePointer<xmlChar>, nodePtr : xmlNodePtr, recursive: Bool)  -> HTMLNode?
+    private func child(ofTag tag : UnsafePointer<xmlChar>,
+                       nodePtr : xmlNodePtr,
+                       recursive : Bool)  -> HTMLNode?
     {
-        var currentNodePtr : xmlNodePtr
-        
-        for currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            let currentNode = currentNodePtr.memory
-            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tagName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            let currentNode = currentNodePtr.pointee
+            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tag) == 1 {
                 return HTMLNode(pointer:currentNodePtr)
             }
-            if recursive {
-                var subNode = childOfTag(tagName, nodePtr:currentNodePtr.memory.children, recursive:recursive)
-                if subNode != nil {
-                    return subNode
-                }
-                
+            if recursive, let children = currentNodePtr.pointee.children,
+                let subNode = child(ofTag: tag, nodePtr:children, recursive:recursive) {
+                return subNode
             }
         }
-        
         return nil
     }
     
-    /**
-    Returns the first descendant node with the specifed tag name.
+    /// Returns the first descendant node with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The first found descendant node or nil.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The first found descendant node or nil.
-    */
-    
-    func descendantOfTag(tagName : String) -> HTMLNode?
+    func descendant(ofTag tag : String) -> HTMLNode?
     {
-        return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:true)
+        return tag.withXmlChar { xmlTag in
+            return child(ofTag: xmlTag, nodePtr: node.children, recursive: true)
+        }
     }
     
-    /**
-    Returns the first child node with the specifed tag name.
+    /// Returns the first child node with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The first found child node or nil.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The first found child node or nil.
-    */
-    
-    func childOfTag(tagName : String) -> HTMLNode?
+    func child(ofTag tag : String) -> HTMLNode?
     {
-        return childOfTag(xmlCharFrom(tagName), nodePtr:node.children, recursive:false)
+        return tag.withXmlChar { xmlTag in
+            return child(ofTag: xmlTag, nodePtr: node.children, recursive: false)
+        }
     }
     
-    /**
-    Returns the first sibling node with the specifed tag name.
+    /// Returns the first sibling node with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The first found sibling node or nil.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The first found sibling node or nil.
-    */
-    
-    func siblingOfTag(tagName : String) -> HTMLNode?
+    func sibling(ofTag tag : String) -> HTMLNode?
     {
-        return childOfTag(xmlCharFrom(tagName), nodePtr:node.next, recursive:false)
+        return tag.withXmlChar { xmlTag in
+                return child(ofTag: xmlTag, nodePtr: node.next, recursive: false)
+        }
     }
     
-    
-    private func childrenOfTag(tagName : UnsafePointer<xmlChar>,  nodePtr : xmlNodePtr, inout array : Array<HTMLNode>, recursive: Bool)
+    private func children(ofTag tag : UnsafePointer<xmlChar>,
+                          nodePtr : xmlNodePtr,
+                          array : inout [HTMLNode],
+                          recursive : Bool)
     {
-        if tagName == nil { return }
-        
-        var currentNodePtr : xmlNodePtr
-        
-        for currentNodePtr = nodePtr; currentNodePtr != nil; currentNodePtr = currentNodePtr.memory.next {
-            let currentNode = currentNodePtr.memory
-            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tagName) == 1 {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            let currentNode = currentNodePtr.pointee
+            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tag) == 1 {
                 if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                     array.append(matchingNode)
                 }
             }
             
-            if recursive {
-                childrenOfTag(tagName, nodePtr:currentNodePtr.memory.children, array:&array, recursive:recursive)
+            if recursive, let childrn = currentNodePtr.pointee.children {
+                children(ofTag: tag, nodePtr: childrn, array: &array, recursive: recursive)
             }
         }
     }
     
-    /**
-    Returns all descendant nodes with the specifed tag name.
+    /// Returns all descendant nodes with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The array of all found descendant nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The array of all found descendant nodes or an empty array.
-    */
-    
-    func descendantsOfTag(tagName : String) -> Array<HTMLNode>
+    func descendants(ofTag tag : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:true)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            children(ofTag: xmlTag, nodePtr: node.children, array: &array, recursive: true)
+        }
         return array
     }
     
-    /**
-    Returns all child nodes with the specifed tag name.
+    /// Returns all child nodes with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The array of all found child nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The array of all found child nodes or an empty array.
-    */
-    
-    func childrenOfTag(tagName : String) -> Array<HTMLNode>
+    func children(ofTag tag : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTag(xmlCharFrom(tagName), nodePtr:node.children, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            children(ofTag: xmlTag, nodePtr: node.children, array: &array, recursive: false)
+        }
         return array
     }
     
-    /**
-    Returns all sibling nodes with the specifed tag name.
+    /// Returns all sibling nodes with the specifed tag name.
+    /// - Parameters:
+    ///   - tag: The name of the tag.
+    /// - Returns: The array of all found sibling nodes or an empty array.
     
-    :param: tagName The name of the tag.
-    
-    :returns: The array of all found sibling nodes or an empty array.
-    */
-    
-    func siiblingsOfTag(tagName : String) -> Array<HTMLNode>
+    func siblings(ofTag tag : String) -> [HTMLNode]
     {
-        var array = Array<HTMLNode>()
-        childrenOfTag(xmlCharFrom(tagName),  nodePtr:node.next, array:&array, recursive:false)
+        var array = [HTMLNode]()
+        tag.withXmlChar { xmlTag in
+            children(ofTag: xmlTag, nodePtr: node.next, array:&array, recursive: false)
+        }
         return array
     }
     
     // MARK: mark - description
     
-    // includes type, name , number of children, attributes and the raw content
+    // includes type, tag , number of children, attributes and the raw content
     var description : String {
-        var attrs : AnyObject!
-        if attributes != nil {
-            attrs = attributes!
-        } else {
-            attrs = "nil"
-        }
-        return "type: \(elementType) - tag name: \(tagName) - number of children: \(childCount)\nattributes: \(attrs)\nHTML: \(HTMLString)"
+        return "type: \(elementType) - tag name: \(tagName ?? "n/a") - number of children: \(childCount)\nattributes: \(attributes.description)\nHTML: \(HTMLString ?? "n/a")"
     }
     
-    // creates a String from a xmlChar
+    // creates a String from a xmlChar pointer
     
-    func stringFrom(xmlchar: UnsafePointer<xmlChar>) -> String? {
-        let cString = UnsafePointer<CChar>(xmlchar)
-        return String.fromCString(cString)
-    }
-    
-    // creates a xmlChar from a String
-    
-    func xmlCharFrom(string: String) -> UnsafePointer<xmlChar> {
-        let cData = string.dataUsingEncoding(NSUTF8StringEncoding)
-        return UnsafePointer<xmlChar>(cData!.bytes)
+    func stringFrom(xmlchar: UnsafePointer<xmlChar>) -> String {
+        return String.decodeCString(xmlchar, as: UTF8.self, repairingInvalidCodeUnits: false)?.result ?? ""
     }
     
     // sequence generator to be able to write "for item in HTMLNode" as a shortcut for "for item in HTMLNode.children"
     
-    func generate() -> GeneratorOf<HTMLNode> {
-        var node = pointer.memory.children
-        return GeneratorOf<HTMLNode> {
-            if xmlNodeIsText(node) == 1 {
-                node = node.memory.next
-                if node.hashValue == 0 { return .None }
-            }
-            let nextNode = HTMLNode(pointer:node)
-            node = node.memory.next
-            if node.hashValue == 0 {
-                return .None
-            } else {
-                return nextNode
-            }
+    func makeIterator() -> HTMLNodeIterator {
+        return HTMLNodeIterator(node: self)
+    }
+    
+    // MARK: -  Equation protocol
+    
+    static func == (lhs: HTMLNode, rhs: HTMLNode) -> Bool {
+        return xmlXPathCmpNodes(lhs.pointer, rhs.pointer) == 0
+    }
+}
+
+struct HTMLNodeIterator : IteratorProtocol {
+    var node: xmlNodePtr?
+    
+    init(node: HTMLNode) {
+        self.node = node.pointer.pointee.children
+    }
+    
+    mutating func next() -> HTMLNode? {
+        if xmlNodeIsText(node) == 1 {
+            node = node?.pointee.next
+            if node == nil  { return .none }
         }
-        
+        let nextNode = HTMLNode(pointer:node)
+        node = node?.pointee.next
+        return node == nil ?  .none : nextNode
     }
-    
-    // alternative sequence generator to consider all text nodes
-    // see also the 'children' property
-    
-    
-    //    func generate() -> GeneratorOf<HTMLNode> {
-    //        var node = self.pointer?.memory.children
-    //        return GeneratorOf<HTMLNode> {
-    //            if node!.hashValue != 0 {
-    //                let nextNode = HTMLNode(pointer:node!)
-    //                node = node!.memory.next
-    //                return nextNode
-    //            } else {
-    //                return .None
-    //            }
-    //        }
-    //
-    //    }
     
 }
 
-// MARK: -  Equation protocol
-
-func == (lhs: HTMLNode, rhs: HTMLNode) -> Bool {
-    
-    if lhs.pointer != nil && rhs.pointer != nil {
-        return xmlXPathCmpNodes(lhs.pointer!, rhs.pointer!) == 0
-    }
-    return false
-}
 
 
 
