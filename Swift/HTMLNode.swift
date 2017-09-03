@@ -274,7 +274,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     /// The value for the id attribute.
     
-    var IDValue : String? {
+    var idValue : String? {
         return attribute(for: kIDKey)
     }
     
