@@ -6,7 +6,7 @@
  #                                                                                   #
  #    Swift wrapper for HTML parser of libxml2                                       #
  #                                                                                   #
- #    Version 1.0 - 1. Sep 2017                                                      #
+ #    Version 1.0.1 - 4. Sep 2017                                                    #
  #                                                                                   #
  #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #

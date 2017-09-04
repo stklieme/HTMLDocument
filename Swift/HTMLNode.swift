@@ -6,7 +6,7 @@
  #                                                                                   #
  #    Swift wrapper for HTML parser of libxml2                                       #
  #                                                                                   #
- #    Version 1.0 - 1. Sep 2017                                                      #
+ #    Version 1.0.1 - 4. Sep 2017                                                    #
  #                                                                                   #
  #    usage:     add libxml2.dylib to frameworks (depends on autoload settings)      #
  #               add $SDKROOT/usr/include/libxml2 to target -> Header Search Paths   #
@@ -47,6 +47,12 @@ private enum XMLElementType : UInt32
     case XINCLUDE_END = 20, DOCB_DOCUMENT_NODE = 21
 }
 
+enum AttributeKey {
+    static let `class` = "class"
+    static let id = "id"
+    static let href = "href"
+    static let src = "src"
+}
 
 extension String {
     
@@ -135,8 +141,6 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     // MARK: Constants
     
     private let dumpBufferSize = 4000
-    let kClassKey = "class"
-    let kIDKey = "id"
     
     // MARK: XPath Error variables
     
@@ -269,25 +273,25 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     /// The value for the class attribute.
     
     var classValue : String? {
-        return attribute(for: kClassKey)
+        return attribute(for: AttributeKey.`class`)
     }
     
     /// The value for the id attribute.
     
     var idValue : String? {
-        return attribute(for: kIDKey)
+        return attribute(for: AttributeKey.id)
     }
     
     /// The value for the href attribute.
     
     var hrefValue : String? {
-        return attribute(for: "href")
+        return attribute(for: AttributeKey.href)
     }
     
     /// The value for the src attribute.
     
     var srcValue : String? {
-        return attribute(for: "src")
+        return attribute(for: AttributeKey.src)
     }
     
     /// The integer value.
@@ -458,7 +462,8 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     var textContentOfChildren : [String] {
         var array = [String]()
-        textContentOfChildren(nodePtr: node.children, array:&array, recursive:false)
+        guard let childrn = node.children else { return array }
+        textContentOfChildren(nodePtr: childrn, array:&array, recursive:false)
         return array
     }
     
@@ -496,7 +501,8 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     var textContentOfDescendants : [String] {
         var array = [String]()
-        textContentOfChildren(nodePtr: node.children, array:&array, recursive:true)
+        guard let childrn = node.children else { return array }
+        textContentOfChildren(nodePtr: childrn, array:&array, recursive:true)
         return array
     }
     
@@ -537,7 +543,8 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
@@ -557,8 +564,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    if xmlStrEqual(attr.pointee.children.pointee.content, value) == 1 {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
+                    if let attrContent = attr.pointee.children?.pointee.content,
+                        xmlStrEqual(attrContent, value) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
@@ -579,9 +588,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    if xmlStrstr(attr.pointee.children.pointee.content, value) != nil {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
+                    if let attrContent = attr.pointee.children?.pointee.content,
+                        xmlStrstr(attrContent, value) != nil {
                         return HTMLNode(pointer: currentNodePtr)
                     }
                 }
@@ -602,9 +612,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    let subString = xmlStrsub(attr.pointee.children.pointee.content, 0, xmlStrlen(value))
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1,
+                    let attrContent = attr.pointee.children?.pointee.content {
+                    let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
                     if xmlStrEqual(subString, value) == 1 {
                         return HTMLNode(pointer: currentNodePtr)
                     }
@@ -626,9 +637,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    let attrContent = attr.pointee.children.pointee.content
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1,
+                    let attrContent = attr.pointee.children?.pointee.content {
                     let addValueLength = xmlStrlen(value)
                     let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
                     if xmlStrEqual(subString, value) == 1 {
@@ -645,7 +656,6 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
         return nil
     }
     
-    
     private func children(withAttribute attribute : UnsafePointer<xmlChar>,
                           nodePtr : xmlNodePtr,
                           array : inout [HTMLNode],
@@ -653,7 +663,8 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                         break
@@ -675,9 +686,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    if xmlStrEqual(attr.pointee.children.pointee.content, value) == 1 {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
+                    if let attrContent = attr.pointee.children?.pointee.content,
+                        xmlStrEqual(attrContent, value) == 1 {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -700,9 +712,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    if xmlStrstr(attr.pointee.children.pointee.content, value) != nil {
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1 {
+                    if let attrContent = attr.pointee.children?.pointee.content,
+                        xmlStrstr(attrContent, value) != nil {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
                             break
@@ -725,9 +738,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    let subString = xmlStrsub(attr.pointee.children.pointee.content, 0, xmlStrlen(value))
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1,
+                    let attrContent = attr.pointee.children?.pointee.content {
+                    let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
                     if xmlStrEqual(subString, value) == 1 {
                         if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                             array.append(matchingNode)
@@ -751,9 +765,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if xmlStrEqual(attr.pointee.name, attribute) == 1 {
-                    
-                    let attrContent = attr.pointee.children.pointee.content
+                if let attrName = attr.pointee.name,
+                    xmlStrEqual(attrName, attribute) == 1,
+                    let attrContent = attr.pointee.children?.pointee.content {
                     let addValueLength = xmlStrlen(value)
                     let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
                     if xmlStrEqual(subString, value) == 1 {
@@ -771,7 +785,6 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
         }
     }
     
-    
     /// Returns the first descendant node with the specifed attribute name and value matching exactly.
     /// - Parameters:
     ///   - attributeName: The name of the attribute.
@@ -780,9 +793,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, recursive: true)
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -794,9 +808,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, recursive: false)
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -809,9 +824,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withAttribute attribute : String, matches value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.next, recursive: false)
+                return child(withAttribute: xmlAttr, matches: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -824,9 +840,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, recursive: true)
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -839,9 +856,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, recursive: false)
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -854,9 +872,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withAttribute attribute : String, contains value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.next, recursive: false)
+                return child(withAttribute: xmlAttr, contains: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -870,9 +889,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, recursive: true)
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -885,9 +905,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, recursive: false)
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -900,9 +921,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withAttribute attribute : String, beginsWith value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.next, recursive: false)
+                return child(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -916,9 +938,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, recursive: true)
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -931,9 +954,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, recursive: false)
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -946,9 +970,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withAttribute attribute : String, endsWith value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.next, recursive: false)
+                return child(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -962,9 +987,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: childrn, array: &array, recursive: true)
             }
         }
         return array
@@ -979,9 +1005,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.children, array: &array, recursive: false)
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: childrn, array: &array, recursive: false)
             }
         }
         return array
@@ -996,9 +1023,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(withAttribute attribute : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: node.next, array: &array, recursive: false)
+                children(withAttribute: xmlAttr, matches: xmlValue, nodePtr: next, array: &array, recursive: false)
             }
         }
         return array
@@ -1013,9 +1041,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: childrn, array: &array, recursive: true)
             }
         }
         return array
@@ -1030,9 +1059,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.children, array: &array, recursive: false)
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: childrn, array: &array, recursive: false)
             }
         }
         return array
@@ -1047,9 +1077,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(withAttribute attribute : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: node.next, array: &array, recursive: false)
+                children(withAttribute: xmlAttr, contains: xmlValue, nodePtr: next, array: &array, recursive: false)
             }
         }
         return array
@@ -1064,9 +1095,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, array: &array, recursive: true)
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: childrn, array: &array, recursive: true)
             }
         }
         return array
@@ -1081,9 +1113,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.children, array:&array, recursive: false)
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: childrn, array:&array, recursive: false)
             }
         }
         return array
@@ -1098,9 +1131,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(withAttribute attribute : String, beginsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: node.next, array:&array, recursive: false)
+                children(withAttribute: xmlAttr, beginsWith: xmlValue, nodePtr: next, array:&array, recursive: false)
             }
         }
         return array
@@ -1115,9 +1149,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, array:&array, recursive: true)
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: childrn, array:&array, recursive: true)
             }
         }
         return array
@@ -1132,9 +1167,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.children, array:&array, recursive: false)
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: childrn, array:&array, recursive: false)
             }
         }
         return array
@@ -1149,9 +1185,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(withAttribute attribute : String, endsWith value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         attribute.withXmlChar { xmlAttr in
             value.withXmlChar { xmlValue in
-                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: node.next, array:&array, recursive: false)
+                children(withAttribute: xmlAttr, endsWith: xmlValue, nodePtr: next, array:&array, recursive: false)
             }
         }
         return array
@@ -1164,8 +1201,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withAttribute attribute : String) -> HTMLNode?
     {
+       guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
-            return child(withAttribute: xmlAttr, nodePtr: node.children, recursive: true)
+            return child(withAttribute: xmlAttr, nodePtr: childrn, recursive: true)
         }
     }
     
@@ -1176,8 +1214,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withAttribute attribute : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return attribute.withXmlChar { xmlAttr in
-            return child(withAttribute: xmlAttr, nodePtr: node.children, recursive: false)
+            return child(withAttribute: xmlAttr, nodePtr: childrn, recursive: false)
         }
     }
     
@@ -1188,8 +1227,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withAttribute attribute : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return attribute.withXmlChar { xmlAttr in
-            return child(withAttribute: xmlAttr, nodePtr: node.next, recursive: false)
+            return child(withAttribute: xmlAttr, nodePtr: next, recursive: false)
         }
     }
     
@@ -1201,8 +1241,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(withAttribute attribute : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
-            children(withAttribute: xmlAttr, nodePtr: node.children, array:&array, recursive: true)
+            children(withAttribute: xmlAttr, nodePtr: childrn, array:&array, recursive: true)
         }
         return array
     }
@@ -1215,8 +1256,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(withAttribute attribute : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         attribute.withXmlChar { xmlAttr in
-            children(withAttribute: xmlAttr, nodePtr: node.children, array:&array, recursive: false)
+            children(withAttribute: xmlAttr, nodePtr: childrn, array:&array, recursive: false)
         }
         return array
     }
@@ -1229,8 +1271,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(withAttribute attribute : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         attribute.withXmlChar { xmlAttr in
-            children(withAttribute: xmlAttr, nodePtr: node.next, array:&array, recursive: false)
+            children(withAttribute: xmlAttr, nodePtr: next, array:&array, recursive: false)
         }
         return array
     }
@@ -1242,9 +1285,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withClass value : String) -> HTMLNode?
     {
-        return kClassKey.withXmlChar { xmlClass in
+        guard let childrn = node.children else { return nil }
+        return AttributeKey.`class`.withXmlChar { xmlClass in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.children, recursive: true)
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -1256,9 +1300,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withClass value : String) -> HTMLNode?
     {
-        return kClassKey.withXmlChar { xmlClass in
+        guard let childrn = node.children else { return nil }
+        return AttributeKey.`class`.withXmlChar { xmlClass in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.children, recursive: false)
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -1270,9 +1315,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withClass value : String) -> HTMLNode?
     {
-        return kClassKey.withXmlChar { xmlClass in
+        guard let next = node.next else { return nil }
+        return AttributeKey.`class`.withXmlChar { xmlClass in
             value.withXmlChar { xmlValue in
-                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: node.next, recursive: false)
+                return child(withAttribute: xmlClass, matches: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -1284,7 +1330,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendants(withClass value : String) -> [HTMLNode]
     {
-        return self.descendants(withAttribute: kClassKey, matches: value)
+        return self.descendants(withAttribute: AttributeKey.`class`, matches: value)
     }
     
     /// Returns all child nodes with the specifed class value.
@@ -1294,7 +1340,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func children(withClass value : String) -> [HTMLNode]
     {
-        return self.children(withAttribute: kClassKey, matches: value)
+        return self.children(withAttribute: AttributeKey.`class`, matches: value)
     }
     
     /// Returns all sibling nodes with the specifed class value.
@@ -1304,7 +1350,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func siblings(withClass value : String) -> [HTMLNode]
     {
-        return self.siblings(withAttribute: kClassKey, matches: value)
+        return self.siblings(withAttribute: AttributeKey.`class`, matches: value)
     }
     
     /// Returns the first descendant node with the specifed id value.
@@ -1314,9 +1360,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(withID value : String) -> HTMLNode?
     {
-        return kIDKey.withXmlChar { xmlID in
+        guard let childrn = node.children else { return nil }
+        return AttributeKey.id.withXmlChar { xmlID in
             value.withXmlChar { xmlValue in
-               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.children, recursive: true)
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -1328,9 +1375,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(withID value : String) -> HTMLNode?
     {
-        return kIDKey.withXmlChar { xmlID in
+        guard let childrn = node.children else { return nil }
+        return AttributeKey.id.withXmlChar { xmlID in
             value.withXmlChar { xmlValue in
-               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.children, recursive: false)
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -1342,9 +1390,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(withID value : String) -> HTMLNode?
     {
-        return kIDKey.withXmlChar { xmlID in
+        guard let next = node.next else { return nil }
+        return AttributeKey.id.withXmlChar { xmlID in
             value.withXmlChar { xmlValue in
-               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: node.next, recursive: false)
+               return child(withAttribute: xmlID, matches: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -1356,13 +1405,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
-                let childNodePtr = currentNodePtr.pointee.children
-                let childContent = (childNodePtr != nil) ? childNodePtr!.pointee.content : nil
-                if childContent != nil && xmlStrEqual(childContent, value) == 1 {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
+                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                    xmlStrEqual(childContent, value) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
+            
             if recursive, let children = currentNodePtr.pointee.children,
                 let subNode = child(ofTag: tag, matches: value, nodePtr: children, recursive:recursive) {
                 return subNode
@@ -1377,13 +1427,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
-                let childNodePtr = currentNodePtr.pointee.children
-                let childContent = (childNodePtr != nil) ? childNodePtr!.pointee.content : nil
-                if childContent != nil  && xmlStrstr(childContent, value) != nil {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
+                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                    xmlStrstr(childContent, value) != nil {
                     return HTMLNode(pointer: currentNodePtr)
                 }
             }
+            
             if recursive, let children = currentNodePtr.pointee.children,
                 let subNode = child(ofTag: tag, contains: value, nodePtr: children, recursive:recursive) {
                 return subNode
@@ -1400,9 +1451,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(ofTag tag : String, matches value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-               return child(ofTag: xmlTag, matches: xmlValue,  nodePtr: node.children, recursive: true)
+               return child(ofTag: xmlTag, matches: xmlValue,  nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -1415,9 +1467,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(ofTag tag : String, matches value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: node.children, recursive: false)
+                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -1430,9 +1483,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(ofTag tag : String, matches value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: node.next, recursive: false)
+                return child(ofTag: xmlTag, matches: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -1445,9 +1499,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(ofTag tag : String, contains value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: node.children, recursive: true)
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: childrn, recursive: true)
             }
         }
     }
@@ -1460,9 +1515,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(ofTag tag : String, contains value : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: node.children, recursive: false)
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: childrn, recursive: false)
             }
         }
     }
@@ -1475,9 +1531,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(ofTag tag : String, contains value : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                return child(ofTag: xmlTag, contains: xmlValue, nodePtr:node.next, recursive: false)
+                return child(ofTag: xmlTag, contains: xmlValue, nodePtr: next, recursive: false)
             }
         }
     }
@@ -1490,13 +1547,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
-                if xmlStrEqual(currentNodePtr.pointee.children.pointee.content, value) == 1 {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
+                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                    xmlStrEqual(childContent, value) == 1 {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                     }
                 }
             }
+            
             if recursive, let childrn = currentNodePtr.pointee.children {
                 children(ofTag:tag, matches: value, nodePtr: childrn, array: &array, recursive: recursive)
             }
@@ -1510,14 +1570,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            if xmlStrEqual(currentNodePtr.pointee.name, tag) == 1 {
-                
-                if xmlStrstr(currentNodePtr.pointee.children.pointee.content, value) != nil {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
+                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                    xmlStrstr(childContent, value) != nil {
                     if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                         array.append(matchingNode)
                     }
                 }
             }
+            
             if recursive, let childrn = currentNodePtr.pointee.children {
                 children(ofTag: tag, contains: value, nodePtr: childrn, array: &array, recursive: recursive)
             }
@@ -1533,9 +1595,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.children, array: &array, recursive: true)
+                children(ofTag: xmlTag, matches: xmlValue, nodePtr:childrn, array: &array, recursive: true)
             }
         }
         return array
@@ -1550,9 +1613,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                 children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.children, array: &array, recursive: false)
+                 children(ofTag: xmlTag, matches: xmlValue, nodePtr:childrn, array: &array, recursive: false)
             }
         }
         return array
@@ -1567,9 +1631,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(ofTag tag : String, matches value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                children(ofTag: xmlTag, matches: xmlValue, nodePtr:node.next, array: &array, recursive: false)
+                children(ofTag: xmlTag, matches: xmlValue, nodePtr: next, array: &array, recursive: false)
             }
         }
         return array
@@ -1584,9 +1649,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                children(ofTag: xmlTag, contains: xmlValue,  nodePtr:node.children, array: &array, recursive: true)
+                children(ofTag: xmlTag, contains: xmlValue,  nodePtr: childrn, array: &array, recursive: true)
             }
         }
         return array
@@ -1601,9 +1667,10 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                 children(ofTag:xmlTag, contains: xmlValue,  nodePtr:node.children, array: &array, recursive: false)
+                 children(ofTag:xmlTag, contains: xmlValue,  nodePtr: childrn, array: &array, recursive: false)
             }
         }
         return array
@@ -1618,25 +1685,26 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(ofTag tag : String, contains value : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         tag.withXmlChar { xmlTag in
             value.withXmlChar { xmlValue in
-                children(ofTag: xmlTag, contains: xmlValue,  nodePtr:node.next, array: &array, recursive: false)
+                children(ofTag: xmlTag, contains: xmlValue,  nodePtr: next, array: &array, recursive: false)
             }
         }
         return array
     }
     
     
-    
     private func child(ofTag tag : UnsafePointer<xmlChar>,
-                       nodePtr : xmlNodePtr,
+                       nodePtr : xmlNodePtr!,
                        recursive : Bool)  -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            let currentNode = currentNodePtr.pointee
-            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tag) == 1 {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
                 return HTMLNode(pointer:currentNodePtr)
             }
+            
             if recursive, let children = currentNodePtr.pointee.children,
                 let subNode = child(ofTag: tag, nodePtr:children, recursive:recursive) {
                 return subNode
@@ -1652,8 +1720,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func descendant(ofTag tag : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
-            return child(ofTag: xmlTag, nodePtr: node.children, recursive: true)
+            return child(ofTag: xmlTag, nodePtr: childrn, recursive: true)
         }
     }
     
@@ -1664,8 +1733,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func child(ofTag tag : String) -> HTMLNode?
     {
+        guard let childrn = node.children else { return nil }
         return tag.withXmlChar { xmlTag in
-            return child(ofTag: xmlTag, nodePtr: node.children, recursive: false)
+            return child(ofTag: xmlTag, nodePtr: childrn, recursive: false)
         }
     }
     
@@ -1676,8 +1746,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     func sibling(ofTag tag : String) -> HTMLNode?
     {
+        guard let next = node.next else { return nil }
         return tag.withXmlChar { xmlTag in
-                return child(ofTag: xmlTag, nodePtr: node.next, recursive: false)
+                return child(ofTag: xmlTag, nodePtr: next, recursive: false)
         }
     }
     
@@ -1687,8 +1758,8 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            let currentNode = currentNodePtr.pointee
-            if currentNode.name != nil &&  xmlStrEqual(currentNode.name, tag) == 1 {
+            if let currentNodeName = currentNodePtr.pointee.name,
+                xmlStrEqual(currentNodeName, tag) == 1 {
                 if let matchingNode = HTMLNode(pointer: currentNodePtr) {
                     array.append(matchingNode)
                 }
@@ -1708,8 +1779,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func descendants(ofTag tag : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
-            children(ofTag: xmlTag, nodePtr: node.children, array: &array, recursive: true)
+            children(ofTag: xmlTag, nodePtr: childrn, array: &array, recursive: true)
         }
         return array
     }
@@ -1722,8 +1794,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func children(ofTag tag : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let childrn = node.children else { return array }
         tag.withXmlChar { xmlTag in
-            children(ofTag: xmlTag, nodePtr: node.children, array: &array, recursive: false)
+            children(ofTag: xmlTag, nodePtr: childrn, array: &array, recursive: false)
         }
         return array
     }
@@ -1736,8 +1809,9 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     func siblings(ofTag tag : String) -> [HTMLNode]
     {
         var array = [HTMLNode]()
+        guard let next = node.next else { return array }
         tag.withXmlChar { xmlTag in
-            children(ofTag: xmlTag, nodePtr: node.next, array:&array, recursive: false)
+            children(ofTag: xmlTag, nodePtr: next, array:&array, recursive: false)
         }
         return array
     }
