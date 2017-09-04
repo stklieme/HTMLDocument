@@ -351,7 +351,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     /// The raw string.
     
     var rawStringValue : String? {
-        guard let content = node.children.pointee.content else { return nil }
+        guard let content = node.children?.pointee.content else { return nil }
         return stringFrom(xmlchar: content)
     }
     
@@ -386,16 +386,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                                        array : inout [String],
                                        recursive : Bool)
     {
-        for currentNode in XmlNodeSequence(node: nodePtr) {
-            if let content = textContent(of: currentNode), !content.isEmpty {
+        for currentNodePtr in XmlNodeSequence(node: nodePtr) {
+            if let content = textContent(of: currentNodePtr), !content.isEmpty {
                 let trimmedContent = content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
                 if !trimmedContent.isEmpty {
                     array.append(trimmedContent)
                 }
             }
             
-            if recursive {
-                textContentOfChildren(nodePtr: currentNode.pointee.children, array: &array, recursive: recursive)
+            if recursive, let children = currentNodePtr.pointee.children {
+                textContentOfChildren(nodePtr: children, array: &array, recursive: recursive)
             }
         }
     }
