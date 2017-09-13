@@ -109,9 +109,9 @@ extension String {
 
 private class XMLSequence<T> : Sequence {
     
-    typealias Element = UnsafeMutablePointer<T>?
-    var current: Element
-    var next: Element { return nil }
+    typealias Element = UnsafeMutablePointer<T>
+    var current: Element?
+    var next: Element? { return nil }
     
     init(node: Element) { self.current = node }
     
@@ -126,13 +126,13 @@ private class XMLSequence<T> : Sequence {
 
 private class XmlAttrSequence : XMLSequence<xmlAttr> {
     
-    override var next: Element { return current?.pointee.next }
+    override var next: Element? { return current?.pointee.next }
     override init(node: Element) { super.init(node: node) }
 }
 
 private class XmlNodeSequence : XMLSequence<xmlNode> {
     
-    override var next: Element { return current?.pointee.next }
+    override var next: Element? { return current?.pointee.next }
     override init(node: Element) { super.init(node: node) }
 }
 
@@ -542,16 +542,18 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    return HTMLNode(pointer: currentNodePtr)
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        return HTMLNode(pointer: currentNodePtr)
+                    }
                 }
-            }
-            
-            if recursive, let children = currentNodePtr.pointee.children,
-                let subNode = child(withAttribute: attribute, nodePtr: children, recursive: recursive) {
-                return subNode
+                
+                if recursive, let children = currentNodePtr.pointee.children,
+                    let subNode = child(withAttribute: attribute, nodePtr: children, recursive: recursive) {
+                    return subNode
+                }
             }
         }
         return nil
@@ -563,12 +565,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    if let attrContent = attr.pointee.children?.pointee.content,
-                        xmlStrEqual(attrContent, value) == 1 {
-                        return HTMLNode(pointer: currentNodePtr)
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        if let attrContent = attr.pointee.children?.pointee.content,
+                            xmlStrEqual(attrContent, value) == 1 {
+                            return HTMLNode(pointer: currentNodePtr)
+                        }
                     }
                 }
             }
@@ -587,12 +591,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    if let attrContent = attr.pointee.children?.pointee.content,
-                        xmlStrstr(attrContent, value) != nil {
-                        return HTMLNode(pointer: currentNodePtr)
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        if let attrContent = attr.pointee.children.pointee.content,
+                            xmlStrstr(attrContent, value) != nil {
+                            return HTMLNode(pointer: currentNodePtr)
+                        }
                     }
                 }
             }
@@ -611,13 +617,15 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1,
-                    let attrContent = attr.pointee.children?.pointee.content {
-                    let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
-                    if xmlStrEqual(subString, value) == 1 {
-                        return HTMLNode(pointer: currentNodePtr)
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1,
+                        let attrContent = attr.pointee.children?.pointee.content {
+                        let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
+                        if xmlStrEqual(subString, value) == 1 {
+                            return HTMLNode(pointer: currentNodePtr)
+                        }
                     }
                 }
             }
@@ -636,14 +644,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                        recursive : Bool) -> HTMLNode?
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1,
-                    let attrContent = attr.pointee.children?.pointee.content {
-                    let addValueLength = xmlStrlen(value)
-                    let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
-                    if xmlStrEqual(subString, value) == 1 {
-                        return HTMLNode(pointer: currentNodePtr)
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1,
+                        let attrContent = attr.pointee.children?.pointee.content {
+                        let addValueLength = xmlStrlen(value)
+                        let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
+                        if xmlStrEqual(subString, value) == 1 {
+                            return HTMLNode(pointer: currentNodePtr)
+                        }
                     }
                 }
             }
@@ -662,12 +672,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    if let matchingNode = HTMLNode(pointer: currentNodePtr) {
-                        array.append(matchingNode)
-                        break
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                            array.append(matchingNode)
+                            break
+                        }
                     }
                 }
             }
@@ -685,14 +697,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    if let attrContent = attr.pointee.children?.pointee.content,
-                        xmlStrEqual(attrContent, value) == 1 {
-                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
-                            array.append(matchingNode)
-                            break
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        if let attrContent = attr.pointee.children?.pointee.content,
+                            xmlStrEqual(attrContent, value) == 1 {
+                            if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                                array.append(matchingNode)
+                                break
+                            }
                         }
                     }
                 }
@@ -711,14 +725,16 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1 {
-                    if let attrContent = attr.pointee.children?.pointee.content,
-                        xmlStrstr(attrContent, value) != nil {
-                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
-                            array.append(matchingNode)
-                            break
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1 {
+                        if let attrContent = attr.pointee.children?.pointee.content,
+                            xmlStrstr(attrContent, value) != nil {
+                            if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                                array.append(matchingNode)
+                                break
+                            }
                         }
                     }
                 }
@@ -737,15 +753,17 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1,
-                    let attrContent = attr.pointee.children?.pointee.content {
-                    let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
-                    if xmlStrEqual(subString, value) == 1 {
-                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
-                            array.append(matchingNode)
-                            break
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1,
+                        let attrContent = attr.pointee.children?.pointee.content {
+                        let subString = xmlStrsub(attrContent, 0, xmlStrlen(value))
+                        if xmlStrEqual(subString, value) == 1 {
+                            if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                                array.append(matchingNode)
+                                break
+                            }
                         }
                     }
                 }
@@ -764,16 +782,18 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
                           recursive : Bool)
     {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
-            for attr in XmlAttrSequence(node: currentNodePtr.pointee.properties) {
-                if let attrName = attr.pointee.name,
-                    xmlStrEqual(attrName, attribute) == 1,
-                    let attrContent = attr.pointee.children?.pointee.content {
-                    let addValueLength = xmlStrlen(value)
-                    let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
-                    if xmlStrEqual(subString, value) == 1 {
-                        if let matchingNode = HTMLNode(pointer: currentNodePtr) {
-                            array.append(matchingNode)
-                            break
+            if let properties = currentNodePtr.pointee.properties {
+                for attr in XmlAttrSequence(node: properties) {
+                    if let attrName = attr.pointee.name,
+                        xmlStrEqual(attrName, attribute) == 1,
+                        let attrContent = attr.pointee.children?.pointee.content {
+                        let addValueLength = xmlStrlen(value)
+                        let subString = xmlStrsub(attrContent, (xmlStrlen(attrContent) - addValueLength), addValueLength)
+                        if xmlStrEqual(subString, value) == 1 {
+                            if let matchingNode = HTMLNode(pointer: currentNodePtr) {
+                                array.append(matchingNode)
+                                break
+                            }
                         }
                     }
                 }
@@ -1407,7 +1427,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             if let currentNodeName = currentNodePtr.pointee.name,
                 xmlStrEqual(currentNodeName, tag) == 1 {
-                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                if let childContent = currentNodePtr.pointee.children.pointee.content,
                     xmlStrEqual(childContent, value) == 1 {
                     return HTMLNode(pointer: currentNodePtr)
                 }
@@ -1429,7 +1449,7 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
         for currentNodePtr in XmlNodeSequence(node: nodePtr) {
             if let currentNodeName = currentNodePtr.pointee.name,
                 xmlStrEqual(currentNodeName, tag) == 1 {
-                if let childContent = currentNodePtr.pointee.children?.pointee.content,
+                if let childContent = currentNodePtr.pointee.children.pointee.content,
                     xmlStrstr(childContent, value) != nil {
                     return HTMLNode(pointer: currentNodePtr)
                 }
