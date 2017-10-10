@@ -252,12 +252,14 @@ class HTMLNode : Sequence, Equatable, CustomStringConvertible {
     
     var attributes : [String:String] {
         var result = [String:String]()
-        for attribute in XmlAttrSequence(node: node.properties) {
-            if let children = attribute.pointee.children,
-                let name = attribute.pointee.name {
-                let value = stringFrom(xmlchar: children.pointee.content)
-                let key = stringFrom(xmlchar: name)
-                result[key] = value
+        if let properties = node.properties {
+            for attribute in XmlAttrSequence(node: properties) {
+                if let children = attribute.pointee.children,
+                    let name = attribute.pointee.name {
+                    let value = stringFrom(xmlchar: children.pointee.content)
+                    let key = stringFrom(xmlchar: name)
+                    result[key] = value
+                }
             }
         }
         return result
