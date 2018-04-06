@@ -78,7 +78,7 @@ extension HTMLNode  {
         
         defer { xmlSetStructuredErrorFunc(nil, nil) }
         
-        let xpathObject = query.withXmlChar { xmlQuery -> xmlXPathObjectPtr! in
+        let xpathObject = query.withXmlChar { xmlQuery -> xmlXPathObjectPtr? in
             if (query.hasPrefix("//") || query.hasPrefix("./")) {
                 return xmlXPathNodeEval(node, xmlQuery, xpathContext)
             } else {
@@ -96,7 +96,7 @@ extension HTMLNode  {
                     return [node]
                 }
             } else {
-                return nodesArray.flatMap{ HTMLNode(pointer:$0) }
+                return nodesArray.compactMap{ HTMLNode(pointer:$0) }
             }
         }
         return [HTMLNode]()
